@@ -12,23 +12,16 @@ class Block:
     """
     
     """
-    def __init__(self, data, prev_hash=None, transactions=[]):
+    def __init__(self, prev_hash=None, transactions=[]):
         self.prev_hash = prev_hash
         self.hash = None
-        self.data = data
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.nounce = None
         self.txs = transactions
 
-        # message = hashlib.sha256()
-        # message.update(data.encode('utf-8'))
-        # message.update(str(prev_hash).encode('utf-8'))
-        # message.update(self.timestamp.encode('utf-8'))
-        # self.hash = message.hexdigest()
-
     def show(self):
         print("父区块", self.prev_hash)
-        print("内容", self.data)
+        print("内容", self.txs)
         print("区块哈希", self.hash)
         print("\n")
 
@@ -57,7 +50,7 @@ class ProofWork():
         i = 0
         while i < 5000000:
             message = hashlib.sha256()
-            message.update(self.block.data.encode('utf-8'))
+            message.update(str(self.block.txs).encode('utf-8'))
             message.update(str(self.block.prev_hash).encode('utf-8'))
             message.update(self.block.timestamp.encode('utf-8'))
             message.update(str(i).encode('utf-8'))
@@ -69,12 +62,13 @@ class ProofWork():
                 signature = self.wallet.sign(json.dumps(t, cls=TransactionEncoder))
                 t.set_sign(self.wallet.pubkey, signature)
                 self.block.txs.append(t)
+                # return self.block
                 break
             i += 1
 
     def validate(self):
         message = hashlib.sha256()
-        message.update(self.block.data.encode('utf-8'))
+        message.update(str(self.block.txs).encode('utf-8'))
         message.update(str(self.block.prev_hash).encode('utf-8'))
         message.update(self.block.timestamp.encode('utf-8'))
         message.update(str(self.block.nounce).encode('utf-8'))
@@ -112,8 +106,10 @@ class Wallet():
         return binascii.hexlify(self._sk.sign(h.digest()))
 
 
-def verify_sign(pubkey, msg, signature):
+def verify_sign(pubkey: str, msg, signature: bytes):
     verifier = VerifyingKey.from_pem(pubkey)
+    if isinstance(msg, bytes):
+        msg = msg.decode()
     h = hashlib.sha256(msg.encode('utf-8'))
     return verifier.verify(binascii.unhexlify(signature), h.digest())
 
@@ -143,12 +139,29 @@ class Transaction:
         return s
 
 class TransactionEncoder(json.JSONEncoder):
-    def default(self, x):
-        if not x:
-            return ""
-        return super().default(x)
+    def default(self, obj):
+        if isinstance(obj, Transaction):
+            return obj.__dict__
+
+def get_balance(user, chain: BlockChain):
+    balance = 0
+    for block in chain.blocks:
+        for tx in block.txs:
+            if tx.sender == user.address.decode():
+                balance -= tx.amount
+            elif tx.receiver == user.address.decode():
+                balance += tx.amount
+    return balance
+
+class Node:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
 
 def test_wallet():
+    """
+    test the function of Wallet
+    """
     w = Wallet()
     s = w.sign("111")
     print(w.address)
@@ -156,27 +169,48 @@ def test_wallet():
     print(verify_sign(w.pubkey, "111", s))
 
 
-genesis_block = Block("创世区块")
-w1 = Wallet()
-pw1 = ProofWork(genesis_block, w1)
-pw1.mine()
-print(pw1.validate())
+def test_chain():
+    blockchain = BlockChain()
 
-new_block = Block("块1", genesis_block.hash)
-w2 = Wallet()
-pw2 = ProofWork(new_block, w2)
-pw2.mine()
+    alice = Wallet()
+    bob = Wallet()
+    tom = Wallet()
+    print("alice's money is", get_balance(alice, blockchain))
+    print("bob's money is", get_balance(bob, blockchain))
+    print("tom's money is", get_balance(tom, blockchain))
 
-new_block2 = Block("块2", new_block.hash)
-w3 = Wallet()
-pw3 = ProofWork(new_block2, w3)
-pw3.mine()
+    # alice mine
+    new_block1 = Block(transactions=[])
+    pw1 = ProofWork(new_block1, alice)
+    pw1.mine()
+    blockchain.add_block(new_block1)
 
+    print("alice's money is", get_balance(alice, blockchain))
 
-chain = BlockChain()
-chain.add_block(genesis_block)
-chain.add_block(new_block)
-chain.add_block(new_block2)
-chain.show()
+    # alice send 0.3 to tom
+    new_tx = Transaction(
+        sender=alice.address,
+        receiver=tom.address,
+        amount=0.3
+    )
+    sig = tom.sign(str(new_tx))
+    new_tx.set_sign(tom.pubkey, sig)
+
+    # bob
+    if verify_sign(new_tx.pubkey, str(new_tx), new_tx.sign):
+        print("tx success")
+        new_block2 = Block(new_block1.hash, [new_tx])
+        pw2 = ProofWork(new_block2, bob)
+        pw2.mine()
+        blockchain.add_block(new_block2)
+    else:
+        print("tx fail")
+
+    print("alice's money is", get_balance(alice, blockchain))
+    print("bob's money is", get_balance(bob, blockchain))
+    print("tom's money is", get_balance(tom, blockchain))
+
+    blockchain.show()
 
 # test_wallet()
+test_chain()
