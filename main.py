@@ -45,6 +45,9 @@ class BlockChain:
     def add_block(self, block):
         self.blocks.append(block)
 
+    def get_last_block(self):
+        return self.blocks[-1]
+
     def show(self):
         for block in self.blocks:
             if block:
