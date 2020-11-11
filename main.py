@@ -37,6 +37,11 @@ class BlockChain:
     def __init__(self):
         self.blocks = []
 
+    def add_first_block(self):
+        first_block = Block(0, [])
+        first_block.hash = first_block.calculate_block_hash()
+        self.blocks.append(first_block)
+
     def add_block(self, block):
         self.blocks.append(block)
 
