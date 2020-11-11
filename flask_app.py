@@ -42,6 +42,13 @@ def submit_textarea():
     return redirect('/')
 
 
+@flask_app.route('/mine', methods=['GET'])
+def mine_unconfirmed_transactions():
+    result = blockchain.mine()
+    if not result:
+        return "No transactions to mine."
+
+
 @flask_app.route('/')
 def index():
     return render_template('index.html', title='Simple Blockchain App')

@@ -54,6 +54,12 @@ class BlockChain:
     def get_last_block(self):
         return self.blocks[-1]
 
+    def mine(self):
+        if not self.unconfirmed_transactions:
+            return False
+        # TODO: fill out stub
+        return True
+
     def show(self):
         for block in self.blocks:
             if block:
