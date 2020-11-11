@@ -37,6 +37,7 @@ class Block:
 class BlockChain:
     def __init__(self, difficulty=DEFAULT_DIFFICULTY):
         self.blocks = []
+        self.unconfirmed_transactions = []
         self.difficulty = difficulty
 
     def add_first_block(self):
@@ -46,6 +47,9 @@ class BlockChain:
 
     def add_block(self, block):
         self.blocks.append(block)
+
+    def add_new_transaction(self, transaction):
+        self.unconfirmed_transactions.append(transaction)
 
     def get_last_block(self):
         return self.blocks[-1]
