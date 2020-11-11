@@ -1,8 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect
 import requests
 import simplejson as json
 from main import BlockChain
 
+NODE_ADDRESS = 'http://127.0.0.1:8000'
 flask_app =  Flask(__name__)
 blockchain = BlockChain()
 
