@@ -14,9 +14,14 @@
 	</form>
 	<br>
 	<div>
-		<a href="{{node_address}}/mine" target="_blank"><button>Mine</button></a>
+		<a href="{{ node_address }}/mine" target="_blank"><button>Mine</button></a>
 		<a href="/"><button>Update</button></a>
 	</div>
 	</center>
+   {% for post in posts %}
+   <div>{{ post.sender }}</div>
+   <div>{{ post.receiver }}</div>
+   <div>{{ post.amount }}</div>
+    {% endfor %}
   </body>
  </html>
