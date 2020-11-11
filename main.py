@@ -7,6 +7,7 @@ import json
 
 
 MINE_REWARD = 1
+DEFAULT_DIFFICULTY = 5
 
 class Block:
     """
@@ -34,8 +35,9 @@ class Block:
         print("\n")
 
 class BlockChain:
-    def __init__(self):
+    def __init__(self, difficulty=DEFAULT_DIFFICULTY):
         self.blocks = []
+        self.difficulty = difficulty
 
     def add_first_block(self):
         first_block = Block(0, [])
@@ -55,7 +57,7 @@ class BlockChain:
 
 
 class ProofWork():
-    def __init__(self, block:Block, wallet, difficult=5):
+    def __init__(self, block:Block, wallet, difficult=DEFAULT_DIFFICULTY):
         self.difficulty = difficult
         self.block = block
         self.wallet = wallet
