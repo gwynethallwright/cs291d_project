@@ -212,5 +212,6 @@ def test_chain():
 
     blockchain.show()
 
-# test_wallet()
-test_chain()
+if __name__ == '__main__':
+    # test_wallet()
+    test_chain()
