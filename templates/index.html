@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title>{{ title }}</title>
+  </head>
+  <body>
+  	<center><h1>{{ title }}</h1></center>
+  	<br>
+	<center>
+	<form action="/submit" id="textform" method="post">
+	    <input type="text" name="sender" placeholder="Your Name">
+	    <input type="text" name="receiver" placeholder="Receiver's Name">
+	    <input type="text" name="value" placeholder="Transaction Amount ($)">
+	    <input type="submit" value="Transact">
+	</form>
+	</center>
+	<br>
+  </body>
+ </html>

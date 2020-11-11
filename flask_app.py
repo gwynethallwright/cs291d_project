@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import requests
 import simplejson as json
 from main import BlockChain
@@ -39,3 +39,8 @@ def submit_textarea():
     requests.post(new_transaction_address, json=transaction_to_post, headers={'Content-type': 'application/json'})
 
     return redirect('/')
+
+
+@flask_app.route('/')
+def index():
+    return render_template('index.html', title='Simple Blockchain App')
