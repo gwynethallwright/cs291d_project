@@ -19,6 +19,14 @@ class Block:
         self.nounce = None
         self.txs = transactions
 
+    def calculate_block_hash(self):
+        message = hashlib.sha256()
+        message.update(str(self.txs).encode('utf-8'))
+        message.update(str(self.prev_hash).encode('utf-8'))
+        message.update(self.timestamp.encode('utf-8'))
+        message.update(str(self.nounce).encode('utf-8'))
+        return message.hexdigest()
+
     def show(self):
         print("父区块", self.prev_hash)
         print("内容", self.txs)
@@ -67,13 +75,7 @@ class ProofWork():
             i += 1
 
     def validate(self):
-        message = hashlib.sha256()
-        message.update(str(self.block.txs).encode('utf-8'))
-        message.update(str(self.block.prev_hash).encode('utf-8'))
-        message.update(self.block.timestamp.encode('utf-8'))
-        message.update(str(self.block.nounce).encode('utf-8'))
-
-        digest = message.hexdigest()
+        digest = self.block.calculate_block_hash()
         prefix = '0' * self.difficulty
         return digest.startswith(prefix)
 
