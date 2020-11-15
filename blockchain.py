@@ -1,16 +1,20 @@
 import hashlib
-import base64
 from datetime import datetime
-from ecdsa import SigningKey, SECP256k1, VerifyingKey
-import binascii
 import json
 
+from wallet import Transaction, TransactionEncoder, Wallet, verify_sign
 
 MINE_REWARD = 1
+DIFFICULTY = 5
 
 class Block:
     """
-    
+    block structure
+        prev_hash: hash of block of parent
+        hash: hash of the block
+        timestamp: time of creation
+        nounce: random number that makes the hash value meet the condition
+        txs: list of transactions
     """
     def __init__(self, prev_hash=None, transactions=[]):
         self.prev_hash = prev_hash
@@ -20,12 +24,20 @@ class Block:
         self.txs = transactions
 
     def show(self):
-        print("父区块", self.prev_hash)
-        print("内容", self.txs)
-        print("区块哈希", self.hash)
+        """
+        print a block
+        """
+        print("hash of prev block is", self.prev_hash)
+        print("transactions are", self.txs)
+        print("block hash is", self.hash)
         print("\n")
 
+
 class BlockChain:
+    """
+    structure of blockchain
+        blocks: list of block
+    """
     def __init__(self):
         self.blocks = []
 
@@ -33,19 +45,25 @@ class BlockChain:
         self.blocks.append(block)
 
     def show(self):
+        """
+        print a blockchain
+        """
         for block in self.blocks:
             if block:
                 block.show()
 
 
 class ProofWork():
-    def __init__(self, block:Block, wallet, difficult=5):
+    """
+
+    """
+    def __init__(self, block:Block, wallet, difficult=DIFFICULTY):
         self.difficulty = difficult
         self.block = block
         self.wallet = wallet
 
     def mine(self):
-        # PoW
+        # find a random number that makes the hash value meet the condition
         prefix = '0' * self.difficulty
         i = 0
         while i < 5000000:
@@ -66,83 +84,6 @@ class ProofWork():
                 break
             i += 1
 
-    def validate(self):
-        message = hashlib.sha256()
-        message.update(str(self.block.txs).encode('utf-8'))
-        message.update(str(self.block.prev_hash).encode('utf-8'))
-        message.update(self.block.timestamp.encode('utf-8'))
-        message.update(str(self.block.nounce).encode('utf-8'))
-
-        digest = message.hexdigest()
-        prefix = '0' * self.difficulty
-        return digest.startswith(prefix)
-
-
-class Wallet():
-    def __init__(self):
-        self._sk = SigningKey.generate(curve=SECP256k1)
-        self._pk = self._sk.get_verifying_key()
-
-    @property
-    def address(self):
-        """
-        generate address by pk
-        """
-        h = hashlib.sha256(self._pk.to_pem())
-        return base64.b64encode(h.digest())
-
-    @property
-    def pubkey(self):
-        """
-        return pubkey string
-        """
-        return self._pk.to_pem()
-
-    def sign(self, msg):
-        """
-        generate digital signature
-        """
-        h = hashlib.sha256(msg.encode("utf-8"))
-        return binascii.hexlify(self._sk.sign(h.digest()))
-
-
-def verify_sign(pubkey: str, msg, signature: bytes):
-    verifier = VerifyingKey.from_pem(pubkey)
-    if isinstance(msg, bytes):
-        msg = msg.decode()
-    h = hashlib.sha256(msg.encode('utf-8'))
-    return verifier.verify(binascii.unhexlify(signature), h.digest())
-
-
-class Transaction:
-    def __init__(self, sender, receiver, amount):
-        if isinstance(sender, bytes):
-            sender = sender.decode("utf-8")
-        self.sender = sender
-        if isinstance(receiver, bytes):
-            receiver = receiver.decode('utf-8')
-        self.receiver = receiver
-        self.amount = amount
-
-    def set_sign(self, pubkey, sign):
-        self.pubkey = pubkey
-        self.sign = sign
-    
-    def __repr__(self):
-        """
-        there are 2 kinds of tx. first is mine to earn, second is to receive
-        """
-        if self.sender:
-            s = "receive:" + str(self.amount)
-        else:
-            s = "mine to earn:" + str(self.amount)
-        return s
-
-class TransactionEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Transaction):
-            return obj.__dict__
-
 def get_balance(user, chain: BlockChain):
     balance = 0
     for block in chain.blocks:
@@ -152,22 +93,6 @@ def get_balance(user, chain: BlockChain):
             elif tx.receiver == user.address.decode():
                 balance += tx.amount
     return balance
-
-class Node:
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
-
-def test_wallet():
-    """
-    test the function of Wallet
-    """
-    w = Wallet()
-    s = w.sign("111")
-    print(w.address)
-    print(s)
-    print(verify_sign(w.pubkey, "111", s))
-
 
 def test_chain():
     blockchain = BlockChain()
@@ -212,5 +137,4 @@ def test_chain():
 
     blockchain.show()
 
-# test_wallet()
-test_chain()
+# test_chain()
