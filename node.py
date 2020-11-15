@@ -42,13 +42,13 @@ class Node(threading.Thread):
         while True:
             connection, addr = sock.accept()
             try:
-                print("handle request")
+                print(self.name, "handle request")
                 self.handle_request(connection)
             except socket.timeout:
                 print("timeout")
             except Exception as e:
                 print(e, )
-            sock.close()
+            connection.close()
 
 
     def init_blockchain(self):
@@ -102,7 +102,7 @@ class Node(threading.Thread):
             if verify_sign(data.pubkey, str(data), data.sign):
                 print(self.name, "verify tx success")
                 # receive new transaction msg
-                block = Block(transactions=[data])
+                block = Block(prev_hash=self.blockchain.blocks[-1].hash, transactions=[data])
                 pw = ProofWork(block, self.wallet)
                 pw.mine()
                 print(self.name, "generate new block successfully")
@@ -114,7 +114,7 @@ class Node(threading.Thread):
         elif isinstance(data, Block):
             # receive new block msg
             print(self.name, "handle new block")
-            if self.verify_block(data):
+            if data.verify():
                 print(self.name, "block verify true")
                 self.blockchain.add_block(data)
                 print(self.name, "block add successfully")
@@ -129,25 +129,20 @@ class Node(threading.Thread):
 
     def broadcast_new_block(self, block):
         for node in NODE_LIST:
+            if node["host"] == self.host and node["port"] == self.port:
+                continue
+            print("broadcast block to", node["host"], node["port"])
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind((self.host, self.port))
             sock.connect((node["host"], node["port"]))
             sock.send(pickle.dumps(block))
+            sock.close()
     
     def broadcast_new_transaction(self, transaction):
         for node in NODE_LIST:
+            if node["host"] == self.host and node["port"] == self.port:
+                continue
+            print(self.name, "broadcast tx to", node["host"], node["port"])
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.bind((self.host, self.port))
             sock.connect((node["host"], node["port"]))
             sock.send(pickle.dumps(transaction))
-        
-    def verify_block(self, block):
-        message = hashlib.sha256()
-        message.update(str(block.txs).encode('utf-8'))
-        message.update(str(block.prev_hash).encode('utf-8'))
-        message.update(block.timestamp.encode('utf-8'))
-        message.update(str(block.nounce).encode('utf-8'))
-
-        digest = message.hexdigest()
-        prefix = '0' * DIFFICULTY
-        return digest.startswith(prefix)
+            sock.close()

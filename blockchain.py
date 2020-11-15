@@ -31,6 +31,20 @@ class Block:
         print("transactions are", self.txs)
         print("block hash is", self.hash)
         print("\n")
+    
+    def verify(self):
+        """
+        verify the hash of a block
+        """
+        message = hashlib.sha256()
+        message.update(str(self.txs).encode('utf-8'))
+        message.update(str(self.prev_hash).encode('utf-8'))
+        message.update(self.timestamp.encode('utf-8'))
+        message.update(str(self.nounce).encode('utf-8'))
+
+        digest = message.hexdigest()
+        prefix = '0' * DIFFICULTY
+        return digest.startswith(prefix)
 
 
 class BlockChain:
@@ -66,6 +80,10 @@ class ProofWork():
         # find a random number that makes the hash value meet the condition
         prefix = '0' * self.difficulty
         i = 0
+        t = Transaction("", self.wallet.address, MINE_REWARD)
+        signature = self.wallet.sign(json.dumps(t, cls=TransactionEncoder))
+        t.set_sign(self.wallet.pubkey, signature)
+        self.block.txs.append(t)
         while i < 5000000:
             message = hashlib.sha256()
             message.update(str(self.block.txs).encode('utf-8'))
@@ -76,12 +94,7 @@ class ProofWork():
             if digest.startswith(prefix):
                 self.block.nounce = i
                 self.block.hash = digest
-                t = Transaction("", self.wallet.address, MINE_REWARD)
-                signature = self.wallet.sign(json.dumps(t, cls=TransactionEncoder))
-                t.set_sign(self.wallet.pubkey, signature)
-                self.block.txs.append(t)
-                # return self.block
-                break
+                return self.block
             i += 1
 
 def get_balance(user, chain: BlockChain):
@@ -126,8 +139,9 @@ def test_chain():
         print("tx success")
         new_block2 = Block(new_block1.hash, [new_tx])
         pw2 = ProofWork(new_block2, bob)
-        pw2.mine()
+        new_block2 = pw2.mine()
         blockchain.add_block(new_block2)
+        print(new_block2.verify())
     else:
         print("tx fail")
 

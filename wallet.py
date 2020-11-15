@@ -60,9 +60,9 @@ class Transaction:
         there are 2 kinds of tx. first is mine to earn, second is to receive
         """
         if self.sender:
-            s = "receive:" + str(self.amount)
+            s = self.receiver + " receive $" + str(self.amount) + " from " + self.sender
         else:
-            s = "mine to earn:" + str(self.amount)
+            s = self.receiver + " mine to earn $" + str(self.amount)
         return s
 
 
