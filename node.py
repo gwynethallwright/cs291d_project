@@ -38,7 +38,7 @@ class Node(threading.Thread):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind((self.host, self.port))
         sock.listen(10)
-        print(self.name, " running")
+        print(self.name, " running\n")
         while True:
             connection, addr = sock.accept()
             try:
@@ -76,14 +76,16 @@ class Node(threading.Thread):
         else:
             # first node, init a genesis block
             self.blockchain = BlockChain()
-            print("创世区块")
+            print(self.name, "creates genesis block\n")
             genesis_block = Block(None, [])
             pw = ProofWork(genesis_block, self.wallet)
             pw.mine()
             self.blockchain.add_block(genesis_block)
 
     def print_blockchain(self):
+        print(self.name, "blockchain")
         self.blockchain.show()
+        print('\n')
 
     def handle_request(self, connection):
         """
@@ -128,7 +130,7 @@ class Node(threading.Thread):
             connection.send(pickle.dumps(self.blockchain))
 
     def get_balance(self):
-        print(get_balance(self.wallet, self.blockchain))
+        print(self.name, " balance ", get_balance(self.wallet, self.blockchain))
 
     def broadcast_new_block(self, block):
         for node in NODE_LIST:
@@ -144,7 +146,7 @@ class Node(threading.Thread):
         for node in NODE_LIST:
             if node["host"] == self.host and node["port"] == self.port:
                 continue
-            print(self.name, "broadcast tx to", node["host"], node["port"])
+            print(self.name, "broadcast tx to", node["name"], node["host"], node["port"])
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((node["host"], node["port"]))
             sock.send(pickle.dumps(transaction))
