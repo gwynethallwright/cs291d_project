@@ -1,1 +1,6 @@
 *.pyc
+Lib
+Include
+Scripts
+*.cfg
+*.txt
