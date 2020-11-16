@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>{{ title }}</title>
+  </head>
+  <body>
+  	<center><h1>{{ title }}</h1></center>
+  	<br>
+	<center>
+	<form action="/submit_transaction" id="textform" method="post">
+	    <input type="text" name="sender" placeholder="Your Name">
+	    <input type="text" name="receiver" placeholder="Receiver's Name">
+	    <input type="text" name="amount" placeholder="Transaction Amount ($)">
+	    <input type="submit" value="Transact">
+	</form>
+	<br>
+	<div>
+		<a href="{{ node_address }}/mine" target="_blank"><button>Mine</button></a>
+		<a href="/"><button>Update</button></a>
+	</div>
+	</center>
+   {% for post in posts %}
+   <div>{{ post.sender }}</div>
+   <div>{{ post.receiver }}</div>
+   <div>{{ post.amount }}</div>
+    {% endfor %}
+  </body>
+ </html>

@@ -6,7 +6,7 @@ import hashlib
 import socket
 
 from wallet import Wallet, Transaction, verify_sign
-from blockchain import BlockChain, Block, ProofWork, get_balance, DIFFICULTY
+from blockchain import BlockChain, Block, ProofWork, get_balance, DEFAULT_DIFFICULTY
 
 # global variable to save all nodes
 NODE_LIST = []
@@ -114,12 +114,15 @@ class Node(threading.Thread):
         elif isinstance(data, Block):
             # receive new block msg
             print(self.name, "handle new block")
-            if data.verify():
+            if self.blockchain.verify_block(data):
                 print(self.name, "block verify true")
-                self.blockchain.add_block(data)
-                print(self.name, "block add successfully")
-            else:
-                print(self.name, "block verify false")
+                for tx in data.txs:
+                    if verify_sign(tx.pubkey, str(tx), tx.sign):
+                        print(self.name, "verify tx success")
+                        self.blockchain.add_block(data)
+                        print(self.name, "block add successfully")
+                        return
+            print(self.name, "block verify false")
         else:
             # a node needs to init, return a copy of chain
             connection.send(pickle.dumps(self.blockchain))

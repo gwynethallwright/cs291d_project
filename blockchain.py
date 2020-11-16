@@ -5,7 +5,7 @@ import json
 from wallet import Transaction, TransactionEncoder, Wallet, verify_sign
 
 MINE_REWARD = 1
-DIFFICULTY = 5
+DEFAULT_DIFFICULTY = 5
 
 class Block:
     """
@@ -23,6 +23,14 @@ class Block:
         self.nounce = None
         self.txs = transactions
 
+    def calculate_block_hash(self):
+        message = hashlib.sha256()
+        message.update(str(self.txs).encode('utf-8'))
+        message.update(str(self.prev_hash).encode('utf-8'))
+        message.update(self.timestamp.encode('utf-8'))
+        message.update(str(self.nounce).encode('utf-8'))
+        return message.hexdigest()
+
     def show(self):
         """
         print a block
@@ -31,20 +39,6 @@ class Block:
         print("transactions are", self.txs)
         print("block hash is", self.hash)
         print("\n")
-    
-    def verify(self):
-        """
-        verify the hash of a block
-        """
-        message = hashlib.sha256()
-        message.update(str(self.txs).encode('utf-8'))
-        message.update(str(self.prev_hash).encode('utf-8'))
-        message.update(self.timestamp.encode('utf-8'))
-        message.update(str(self.nounce).encode('utf-8'))
-
-        digest = message.hexdigest()
-        prefix = '0' * DIFFICULTY
-        return digest.startswith(prefix)
 
 
 class BlockChain:
@@ -52,11 +46,30 @@ class BlockChain:
     structure of blockchain
         blocks: list of block
     """
-    def __init__(self):
+    def __init__(self, difficulty=DEFAULT_DIFFICULTY):
         self.blocks = []
+        self.unconfirmed_transactions = []
+        self.difficulty = difficulty
+
+    def add_first_block(self):
+        first_block = Block(0, [])
+        first_block.hash = first_block.calculate_block_hash()
+        self.blocks.append(first_block)
 
     def add_block(self, block):
         self.blocks.append(block)
+
+    def add_new_transaction(self, transaction):
+        self.unconfirmed_transactions.append(transaction)
+
+    def get_last_block(self):
+        return self.blocks[-1]
+
+    def mine(self):
+        if not self.unconfirmed_transactions:
+            return False
+        # TODO: fill out stub
+        return True
 
     def show(self):
         """
@@ -66,12 +79,23 @@ class BlockChain:
             if block:
                 block.show()
 
+    def verify_block(self, block: Block):
+        """
+        verify the hash of a block
+        """
+        message = hashlib.sha256()
+        message.update(str(block.txs).encode('utf-8'))
+        message.update(str(block.prev_hash).encode('utf-8'))
+        message.update(block.timestamp.encode('utf-8'))
+        message.update(str(block.nounce).encode('utf-8'))
+
+        digest = message.hexdigest()
+        prefix = '0' * self.difficulty
+        return digest.startswith(prefix)
+
 
 class ProofWork():
-    """
-
-    """
-    def __init__(self, block:Block, wallet, difficult=DIFFICULTY):
+    def __init__(self, block:Block, wallet, difficult=DEFAULT_DIFFICULTY):
         self.difficulty = difficult
         self.block = block
         self.wallet = wallet
@@ -141,7 +165,7 @@ def test_chain():
         pw2 = ProofWork(new_block2, bob)
         new_block2 = pw2.mine()
         blockchain.add_block(new_block2)
-        print(new_block2.verify())
+        print(blockchain.verify_block(new_block2))
     else:
         print("tx fail")
 
@@ -151,4 +175,6 @@ def test_chain():
 
     blockchain.show()
 
-# test_chain()
+if __name__ == '__main__':
+    # test_wallet()
+    test_chain()

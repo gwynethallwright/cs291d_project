@@ -82,4 +82,5 @@ def test_wallet():
     print(s)
     print(verify_sign(w.pubkey, "111", s))
 
-# test_wallet()
+if __name__ == '__main__':
+    test_wallet()

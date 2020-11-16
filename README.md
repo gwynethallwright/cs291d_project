@@ -3,8 +3,18 @@
 version:python3
 
 ### usage
+test blockchain
 ```
-python main.py
+python blockchain.py
 ```
 
+test wallet
+```
+python wallet.py
+```
 
+test node
+```
+jupyter notebook
+```
+Open test_node.ipynb and run it cell by cell. For cell[10], please wait 20 seconds for the broadcast data to be fully transmitted to fully operate.
