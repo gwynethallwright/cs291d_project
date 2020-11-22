@@ -24,6 +24,7 @@ def k_enc(pp_enc):
     return pubKeyHex, privKeyHex
 
 def k_sig(pp_sig):
+    
     pass
 
 def mint(pp, v, addr_pk):
