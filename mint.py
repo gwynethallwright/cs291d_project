@@ -127,18 +127,24 @@ def prf_pk(x:bytes, z:bytes):
     """
     return hash_sha256(x + b'10' + z)
 
-def comm_r(r:bytes, a_pk, p):
+def comm_r(r:bytes, a_pk, p) -> str:
     """
-    r = {0, 1} * (256 + 128)
-    a_pk = {0, 1} * 256
-    p = {0, 1} * 256
+    input:
+        r = {0, 1} * (256 + 128)
+        a_pk = {0, 1} * 256
+        p = {0, 1} * 256
+    output:
+        str
     """
     str_h = hash_sha256(a_pk, p)[:128//4]
     return hash_sha256(r, bytes(str_h, encoding='utf-8'))
 
-def comm_s(v:int, k):
+def comm_s(v:int, k) -> str:
     """
-    k = {0, 1} * 256
+    input:
+        k = {0, 1} * 256
+    output:
+        str
     """
     v_b = bytes(str(v), encoding='utf-8').zfill(64//4)
     return hash_sha256(k, b'0' * (192//4), v_b)
