@@ -28,14 +28,22 @@ def k_sig(pp_sig):
 
 def mint(pp, v, addr_pk):
     """
-    coin value v in (0, z^64 - 1)
+    input:
+        v: coin value, in (0, z^64 - 1)
+    output:
+        c: coin
+        tx_mint: transaction
     """
+    # parse addr_pk
     (a_pk, pk_enc) = addr_pk
+    # randomky sample p, r, s
     p = binascii.hexlify(os.urandom(256 // 8))
     r = binascii.hexlify(os.urandom((256 + 128) // 8))
     s = binascii.hexlify(os.urandom(256 // 8))
+    
     k = comm_r(r, a_pk, p)
     cm = comm_s(v, k)
+
     c = (addr_pk, v, p, r, s, cm)
     tx_mint = (cm, v, k, s)
     return c, tx_mint
@@ -88,7 +96,7 @@ def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v
     c_new_2 = (addr_new_pk_2, v_new_2, p_new_2, r_new_2, s_new_2, cm_new_2)
 
     (pk_sig, sk_sig) = k_sig(pp_sig)
-    h_sig = h(pk_sig)
+    h_sig = hash_sha256(pk_sig)
     h1 = prf_pk(a_sk_old_1, '1' + h_sig)
     h2 = prf_pk(a_sk_old_2, '2' + h_sig)
     x = ()
@@ -103,21 +111,21 @@ def prf_addr(x:bytes, z:bytes):
     z = {0, 1} * 254
     x = {0, 1} * 256
     """
-    return h(x + '00' + z)
+    return hash_sha256(x + '00' + z)
 
 def prf_sn(x:bytes, z:bytes):
     """
     z = {0, 1} * 254
     x = {0, 1} * 256
     """
-    return h(x + b'01' + z)
+    return hash_sha256(x + b'01' + z)
 
 def prf_pk(x:bytes, z:bytes):
     """
     z = {0, 1} * 254
     x = {0, 1} * 256
     """
-    return h(x + b'10' + z)
+    return hash_sha256(x + b'10' + z)
 
 def comm_r(r:bytes, a_pk, p):
     """
@@ -125,28 +133,29 @@ def comm_r(r:bytes, a_pk, p):
     a_pk = {0, 1} * 256
     p = {0, 1} * 256
     """
-    return h(r, h(a_pk, p)[:128])
+    str_h = hash_sha256(a_pk, p)[:128//4]
+    return hash_sha256(r, bytes(str_h, encoding='utf-8'))
 
 def comm_s(v:int, k):
     """
     k = {0, 1} * 256
     """
-    v_b = v.to_bytes(64, 'little')
-    return h(k, b'0' * 192, v_b)
+    v_b = bytes(str(v), encoding='utf-8').zfill(64//4)
+    return hash_sha256(k, b'0' * (192//4), v_b)
 
-def h(*args) -> bytes:
+def hash_sha256(*args) -> str:
     """
     maps a 512-bit input to 256-bit output
+    input: bytes
+    output: str
     """
     msg = hashlib.sha256()
+    # caoncat input to 512-bit input
     input = b''
     for v in args:
+        if isinstance(v, str):
+            v = bytes(v, encoding='utf-8')
         input += v
     msg.update(input)
     return msg.hexdigest()
 
-if __name__ == '__main__':
-    # print(k_enc())
-    pp = setup()
-    (addr_pk, addr_sk) = getAddress(pp)
-    print(mint(pp, 1, addr_pk))
