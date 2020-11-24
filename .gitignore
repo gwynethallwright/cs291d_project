@@ -144,3 +144,5 @@ Scripts
 *.cfg
 *.txt
 settings.json
+
+!requirements.txt
