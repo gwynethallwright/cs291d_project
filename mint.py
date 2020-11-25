@@ -4,6 +4,8 @@ import binascii
 from ecies.utils import generate_eth_key
 from ecies import encrypt, decrypt
 
+from circuit import circuit_prove
+
 def setup():
     pk_pour, vk_pour, pp_enc, pp_sig = 1, 1, 1, 1
     pp = (pk_pour, vk_pour, pp_enc, pp_sig)
@@ -24,7 +26,6 @@ def k_enc(pp_enc):
     return pubKeyHex, privKeyHex
 
 def k_sig(pp_sig):
-    
     pass
 
 def mint(pp, v, addr_pk):
@@ -75,12 +76,19 @@ def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v
     """
     pp_sig = pp[3]
 
-    (addr_old_pk_1, v_old_1, ) = c_old_1
+    # parse old coin
+    (addr_old_pk_1, v_old_1, p_old_1, r_old_1, s_old_1, cm_old_1) = c_old_1
+    (addr_old_pk_2, v_old_2, p_old_2, r_old_2, s_old_2, cm_old_2) = c_old_2
+
+    # parse sk of old coin
     (a_sk_old_1, pk_enc) = addr_old_sk_1
     (a_sk_old_2, pk_enc) = addr_old_sk_2
+
+    # parse pk of new coin
     (a_pk_new_1, pk_enc) = addr_new_pk_1
     (a_pk_new_2, pk_enc) = addr_new_pk_2
     
+    # create coin and cm
     p_new_1 = binascii.hexlify(os.urandom(256 // 8))
     r_new_1 = binascii.hexlify(os.urandom((256 + 128) // 8))
     s_new_1 = binascii.hexlify(os.urandom(256 // 8))
@@ -96,6 +104,11 @@ def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v
     c_new_1 = (addr_new_pk_1, v_new_1, p_new_1, r_new_1, s_new_1, cm_new_1)
     c_new_2 = (addr_new_pk_2, v_new_2, p_new_2, r_new_2, s_new_2, cm_new_2)
 
+    # compute old sn
+    sn_old_1 = prf_sn(a_sk_old_1, p_old_1)
+    sn_old_2 = prf_sn(a_sk_old_2, p_old_2)
+    
+
     (pk_sig, sk_sig) = k_sig(pp_sig)
     h_sig = hash_sha256(pk_sig)
     h1 = prf_pk(a_sk_old_1, '1' + h_sig)
@@ -105,28 +118,38 @@ def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v
     pi_pour = prove(pk_pour, x, a)
     m = ()
 
-
-
 def prf_addr(x:bytes, z:bytes):
     """
+    sha256(x||00||z)
+
     z = {0, 1} * 254
     x = {0, 1} * 256
     """
-    return hash_sha256(x + '00' + z)
+    z = int(str(z), 16)
+    z = hex(z >> 2)[2:].encode('utf-8')
+    return hash_sha256(x, z)
 
 def prf_sn(x:bytes, z:bytes):
     """
-    z = {0, 1} * 254
+    sha256(x||01||z)
+
+    z = {0, 1} * 256
     x = {0, 1} * 256
     """
-    return hash_sha256(x + b'01' + z)
+    z = int(str(z), 16)
+    z = hex((z >> 2) | 1 << 254)[2:].encode('utf-8')
+    return hash_sha256(x, z)
 
 def prf_pk(x:bytes, z:bytes):
     """
-    z = {0, 1} * 254
+    sha256(x||10||256)
+
     x = {0, 1} * 256
+    z = {0, 1} * 254
     """
-    return hash_sha256(x + b'10' + z)
+    z = int(str(z), 16)
+    z = hex((z >> 2) | 1 << 255)[2:].encode('utf-8')
+    return hash_sha256(x, z)
 
 def comm_r(r:bytes, a_pk, p) -> str:
     """

@@ -43,10 +43,20 @@ def test_hash_sha256():
 def test_mint():
     pp, v, addr_pk = (1, 1, 1, 1), 1, (b'0' * (256 // 4), 1)
     c, tx_mint = mint(pp, v, addr_pk)
+    print(verify_mint(tx_mint))
     print(c)
     print(tx_mint)
+
+def test_prf_sn():
+    x = b'0' * 64
+    z = b'0' * 64
+    z = int(z.decode(), 16)
+    z = hex((z >> 2) | 1 << 254)[2:].encode('utf-8')
+    print(len(z), z)
+    print(hash_sha256(x, z))
 
 # test_hash_sha256()
 # test_comm_r()
 # test_comm_s()
-test_mint()
+# test_mint()
+# test_prf_sn()
