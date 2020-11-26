@@ -5,6 +5,7 @@ from ecies.utils import generate_eth_key
 from ecies import encrypt, decrypt
 
 from circuit import circuit_prove
+from tools import concat
 
 def setup():
     pk_pour, vk_pour, pp_enc, pp_sig = 1, 1, 1, 1
@@ -111,8 +112,8 @@ def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v
 
     (pk_sig, sk_sig) = k_sig(pp_sig)
     h_sig = hash_sha256(pk_sig)
-    h1 = prf_pk(a_sk_old_1, '1' + h_sig)
-    h2 = prf_pk(a_sk_old_2, '2' + h_sig)
+    h1 = prf_pk(a_sk_old_1, concat(1, h_sig))
+    h2 = prf_pk(a_sk_old_2, concat(2, h_sig))
     x = ()
     a = ()
     pi_pour = prove(pk_pour, x, a)
