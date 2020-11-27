@@ -1,29 +1,6 @@
-"""
-def G_sig(security_parameter):
-
-
-def K_sig(pp_sig):
-
-
-def S_sig(sk_sig, m):
-
-
-def V_sig(pk_sig, m, sigma):
-
-
-def G_enc(security_parameter):
-
-
-def K_enc(pp_enc):
-
-
-def E_enc(pk_enc, m):
-
-
-def D_enc(sk_enc, c):
-"""
-
 from ecdsa import SigningKey, SECP256k1, VerifyingKey
+from ecies.utils import generate_eth_key
+from ecies import encrypt, decrypt
 import hashlib
 import os
 import binascii
@@ -40,6 +17,7 @@ import binascii
 #         pp_sig
 #     """
 security_parameter = os.urandom(256 // 8)
+
 
 def K_sig(pp_sig):
     """
@@ -70,5 +48,34 @@ def test_sig():
     sign = S_sig(sk, m)
     print(V_sig(pk, m, sign))
 
+
+def K_enc(pp_enc):
+    private_key = generate_eth_key()
+    private_key_hex = private_key.to_hex()
+    public_key_hex = private_key.public_key.to_hex()
+    return (public_key_hex, private_key_hex)
+
+
+def E_enc(pk_enc, m):
+    if not isinstance(m, bytes):
+        m = bytes(m, 'utf-8')
+    return encrypt(pk_enc, m)
+
+
+def D_enc(sk_enc, c):
+    return decrypt(sk_enc, c)
+
+
+def test_enc():
+    pk, sk = K_enc(1)
+    plaintext_message = b'Hello World'
+    encrypted_message = E_enc(pk, plaintext_message)
+    decrypted_message = D_enc(sk, encrypted_message)
+    if decrypted_message == plaintext_message:
+        return True
+    return False
+
+
 if __name__ == '__main__':
     test_sig()
+    print(test_enc())
