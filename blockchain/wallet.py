@@ -3,12 +3,12 @@ import base64
 from ecdsa import SigningKey, SECP256k1, VerifyingKey
 import binascii
 import json
+from cryptographic_basics import *
 
 
 class Wallet():
     def __init__(self):
-        self._sk = SigningKey.generate(curve=SECP256k1)
-        self._pk = self._sk.get_verifying_key()
+        self._sk, self._pk = K_sig(1)
 
     @property
     def address(self):
@@ -29,16 +29,11 @@ class Wallet():
         """
         generate digital signature
         """
-        h = hashlib.sha256(msg.encode("utf-8"))
-        return binascii.hexlify(self._sk.sign(h.digest()))
+        return S_sig(self._sk, msg)
 
 
 def verify_sign(pubkey: str, msg, signature: bytes):
-    verifier = VerifyingKey.from_pem(pubkey)
-    if isinstance(msg, bytes):
-        msg = msg.decode()
-    h = hashlib.sha256(msg.encode('utf-8'))
-    return verifier.verify(binascii.unhexlify(signature), h.digest())
+    return V_sig(pubkey, msg, signature)
 
 
 class Transaction:
