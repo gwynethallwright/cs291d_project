@@ -147,3 +147,5 @@ settings.json
 
 !requirements.txt
 !CMakeLists.txt
+
+.idea
