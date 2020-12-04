@@ -2,8 +2,9 @@ import binascii
 import os
 
 from .tools import comm_r, comm_s, prf_pk, hash_sha256, concat, prf_sn, CRH
-from .cryptographic_basics import K_sig, E_enc, S_sig
-from .circuit import circuit_prove
+from .cryptographic_basics import K_sig, E_enc, S_sig, V_sig
+from .circuit import circuit_prove, circuit_verify
+from .ledger import MerkleTreeLedger
 
 
 def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v_new_1, v_new_2, addr_new_pk_1, addr_new_pk_2, v_pub, info, pk_pour):
@@ -61,13 +62,23 @@ def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v
     h_sig = CRH(pk_sig)
     h1 = prf_pk(a_sk_old_1, concat(1, h_sig))
     h2 = prf_pk(a_sk_old_2, concat(2, h_sig))
-    x = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, v_pub, h_sig, h1, h2)
-    a = (path1, path2, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, c_new_1, c_new_2)
-    proof_pour = circuit_prove(pk_pour, x, a)
-    msg = (x, proof_pour, info, Ciphertext_1, Ciphertext_2)
+    x_pub = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, v_pub, h_sig, h1, h2)  # public input of circuir of pour
+    a_private = (path1, path2, c_old_1, c_old_2,
+                 addr_old_sk_1, addr_old_sk_2, c_new_1, c_new_2)    # private input of circuir of pour
+    proof_pour = circuit_prove(pk_pour, x_pub, a_private)
+    msg = (x_pub, proof_pour, info, Ciphertext_1, Ciphertext_2)
     sign = S_sig(sk_sig, msg)
     tx_pour = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, v_pub, info, (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign))
     return c_new_1, c_new_2, tx_pour
 
-def verify_tx_pour(pp, tx, Ledger):
-    pass
+
+def verify_tx_pour(pp, tx_pour, ledger: MerkleTreeLedger, vk_pour):
+    (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, v_pub, info,
+     (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign)) = tx_pour
+    if not ledger.verify_leaf(sn_old_1) or not ledger.verify_leaf(sn_old_2) or ledger.merkle_root != rt:
+        return 0
+    h_sig = CRH(pk_sig)
+    x_pub = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, v_pub, h_sig, h1, h2)
+    msg = (x_pub, proof_pour, info, Ciphertext_1, Ciphertext_2)
+    return V_sig(pk_sig, msg, sign) and circuit_verify(vk_pour, x_pub, proof_pour)
+

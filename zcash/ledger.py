@@ -5,6 +5,8 @@ from merklelib import MerkleTree
 from merklelib.utils import to_hex
 
 # reference: merkle tree in golang https://pkg.go.dev/github.com/cbergoon/merkletree#section-sourcefiles
+# tx_pour in ledger
+# sn on ledger(tree)
 
 
 class MerkleTreeLedger(MerkleTree):
@@ -48,6 +50,10 @@ class MerkleTreeLedger(MerkleTree):
             else:
                 leaf_hash = self.hasher.hash_children(node[0], leaf_hash)
         return to_hex(leaf_hash) == self.merkle_root
+
+    def verify_leaf(self, leaf) -> bool:
+        proof = self.get_proof(leaf)
+        return self.verify_leaf_inclusion(leaf, proof)
 
 
 def hashfunc(value):
