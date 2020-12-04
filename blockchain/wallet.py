@@ -1,9 +1,8 @@
-import hashlib
 import base64
-from ecdsa import SigningKey, SECP256k1, VerifyingKey
-import binascii
+import hashlib
 import json
-from cryptographic_basics import *
+
+from .cryptographic_basics import *
 
 
 class Wallet():

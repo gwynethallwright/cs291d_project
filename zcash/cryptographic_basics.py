@@ -1,9 +1,10 @@
-from ecdsa import SigningKey, SECP256k1, VerifyingKey
-from ecies.utils import generate_eth_key
-from ecies import encrypt, decrypt
+import binascii
 import hashlib
 import os
-import binascii
+
+from ecdsa import SigningKey, SECP256k1, VerifyingKey
+from ecies import encrypt, decrypt
+from ecies.utils import generate_eth_key
 
 # def KeyGen(C_pour):
 #     """

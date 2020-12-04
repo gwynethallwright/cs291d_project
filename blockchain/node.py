@@ -1,12 +1,10 @@
-import json
 import pickle
-
-import threading
-import hashlib
 import socket
+import threading
 
-from wallet import Wallet, Transaction, verify_sign
-from blockchain import BlockChain, Block, ProofWork, get_balance, DEFAULT_DIFFICULTY
+from .wallet import Wallet, Transaction, verify_sign
+
+from .blockchain import BlockChain, Block, ProofWork, get_balance
 
 # global variable to save all nodes
 NODE_LIST = []

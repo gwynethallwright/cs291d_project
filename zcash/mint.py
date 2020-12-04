@@ -1,12 +1,12 @@
-import hashlib
 import os
 import binascii
-from ecies.utils import generate_eth_key
-from ecies import encrypt, decrypt
 
-from .tools import concat, comm_r, comm_s
-from zcash.circuit import circuit_prove
-from zcash.tools import concat, comm_r, comm_s
+from zcash.tools import comm_r, comm_s
+import binascii
+import os
+
+from zcash.tools import comm_r, comm_s
+
 
 # def setup():
 #     pk_pour, vk_pour, pp_enc, pp_sig = 1, 1, 1, 1

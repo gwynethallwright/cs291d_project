@@ -1,8 +1,8 @@
 import hashlib
-from datetime import datetime
 import json
+from datetime import datetime
 
-from wallet import Transaction, TransactionEncoder, Wallet, verify_sign
+from .wallet import Transaction, TransactionEncoder, Wallet, verify_sign
 
 MINE_REWARD = 1
 DEFAULT_DIFFICULTY = 5

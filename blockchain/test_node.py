@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from node import *
 import time
+
+from .node import *
+
 node1 = Node(8002, "node 1")
 
 
