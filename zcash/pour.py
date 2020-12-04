@@ -1,9 +1,9 @@
 import binascii
 import os
 
-from .tools import comm_r, comm_s, prf_pk, hash_sha256, concat, prf_sn, CRH
-from .cryptographic_basics import K_sig, E_enc, S_sig
-from .circuit import circuit_prove
+from zcash.tools import comm_r, comm_s, prf_pk, hash_sha256, concat, prf_sn, CRH
+from zcash.cryptographic_basics import K_sig, E_enc, S_sig
+from zcash.circuit import circuit_prove
 
 
 def pour(pp, rt, c_old_1, c_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, v_new_1, v_new_2, addr_new_pk_1, addr_new_pk_2, v_pub, info, pk_pour):
