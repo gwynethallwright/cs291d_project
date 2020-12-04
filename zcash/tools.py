@@ -1,8 +1,9 @@
 import hashlib
 
-def concat(val:int, source:bytes) -> bytes:
-    """
 
+def concat(val: int, source: bytes) -> int:
+    """
+    (1||source) or (10||source)
     """
     source = int(str(source), 16)
     if val == 1:
@@ -19,7 +20,7 @@ def prf_addr(x:bytes, z:bytes):
     z = {0, 1} * 254
     x = {0, 1} * 256
     """
-    z = int(str(z), 16)
+    z = int(str(z, encoding='utf-8'), 16)
     z = hex(z >> 2)[2:].encode('utf-8')
     return hash_sha256(x, z)
 

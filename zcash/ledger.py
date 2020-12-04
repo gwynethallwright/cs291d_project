@@ -3,6 +3,7 @@ import string
 
 from merklelib import MerkleTree
 from merklelib.utils import to_hex
+from blockchain.blockchain import BlockChain
 
 
 # reference: merkle tree in golang https://pkg.go.dev/github.com/cbergoon/merkletree#section-sourcefiles
@@ -55,6 +56,33 @@ class MerkleTreeLedger(MerkleTree):
     def verify_leaf(self, leaf) -> bool:
         proof = self.get_proof(leaf)
         return self.verify_leaf_inclusion(leaf, proof)
+
+
+class Ledger(BlockChain):
+    """
+    a sequence of transactions
+    (BlockChain)
+
+    CMListT denotes the list of all coin commitments appearing in mint and pour transactions in LedgerT
+    SNListT denotes the list of all serial numbers appearing in pour transactions in LedgerT
+    TreeCMT denotes a Merkle tree over CMListT and rtT its root
+    rt_list stores all past Merkle tree roots
+    """
+    def __init__(self):
+        super(Ledger, self).__init__()
+        self.cm_list_t = []
+        self.sn_list_t = []
+        self.tree_cm_t = MerkleTreeLedger(hashobj=hashfunc)
+        self.rt_list = []
+
+    def get_cm_path(self, cm):
+        return self.tree_cm_t.get_path(cm)
+
+    def add_cm(self, cm):
+        self.cm_list_t.append(cm)
+
+    def verify_sn_inclusion(self, sn):
+        return sn in self.sn_list_t
 
 
 def hashfunc(value):

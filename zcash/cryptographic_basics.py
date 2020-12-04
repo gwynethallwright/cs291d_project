@@ -54,7 +54,7 @@ def K_enc(pp_enc):
     private_key = generate_eth_key()
     private_key_hex = private_key.to_hex()
     public_key_hex = private_key.public_key.to_hex()
-    return (public_key_hex, private_key_hex)
+    return public_key_hex, private_key_hex
 
 
 def E_enc(pk_enc, m):

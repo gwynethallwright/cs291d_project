@@ -7,6 +7,7 @@ from .wallet import Transaction, TransactionEncoder, Wallet, verify_sign
 MINE_REWARD = 1
 DEFAULT_DIFFICULTY = 5
 
+
 class Block:
     """
     block structure
@@ -47,7 +48,7 @@ class BlockChain:
         blocks: list of block
     """
     def __init__(self, difficulty=DEFAULT_DIFFICULTY):
-        self.blocks = []
+        self.blocks: [Block] = []
         self.unconfirmed_transactions = []
         self.difficulty = difficulty
 

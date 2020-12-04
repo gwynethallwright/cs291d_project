@@ -2,27 +2,70 @@ import pickle
 import socket
 import threading
 
+from zcash.setup import setup
+from zcash.ledger import Ledger
+from zcash.create_address import create_address
+from zcash.mint import mint, verify_tx_mint
+from zcash.pour import pour, verify_tx_pour
+from zcash.transaction import TransactionMint, TransactionPour
+from zcash.receive import receive
 from blockchain.wallet import Wallet, Transaction, verify_sign
+from blockchain.blockchain import Block, ProofWork, get_balance
 
-from blockchain.blockchain import BlockChain, Block, ProofWork, get_balance
-
-# global variable to save all nodes
+# global variable for all nodes
 NODE_LIST = []
-
+ledger = Ledger()
+pp = setup()
 PER_BYTE = 128
+coin_value_max = 2**64 - 1
 
 
 class Node(threading.Thread):
     """
     each node is a thread, working on different port of the same computer
     """
+
     def __init__(self, port, name, host="localhost"):
         threading.Thread.__init__(self, name=name)
         self.host = host
         self.port = port
         self.name = name
+        self.addr_pk, self.addr_sk = create_address(pp)
         self.wallet = Wallet()
+        self.coin_set = set()
         self.blockchain = None  # every node save a copy of blockchain
+
+    def mint_coin(self, value):
+        if value > coin_value_max:
+            print("mint value is over coin_value_max")
+            return
+        coin, tx_mint = mint(pp, value, self.addr_pk)
+        self.coin_set.add(coin)
+        ledger.add_cm(coin[-1])
+        tx = TransactionMint(*tx_mint)
+        self.broadcast_new_transaction(tx)
+
+    def pour_coin(self, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, value_new_1, value_new_2, addr_new_pk_1, addr_new_pk_2, value_pub, info):
+        """
+        value_pub: to redeem coins or pay transaction fees
+        """
+        cm_1 = coin_old_1[-1]
+        path1 = ledger.get_cm_path(cm_1)
+        cm_2 = coin_old_2[-1]
+        path2 = ledger.get_cm_path(cm_2)
+        coin_new_1, coin_new_2, tx_pour = pour(pp, ledger.tree_cm_t.merkle_root,
+                                               coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2,
+                                               path1, path2, value_new_1, value_new_2, addr_new_pk_1, addr_new_pk_2, value_pub, info)
+        ledger.add_cm(coin_new_1[-1])
+        ledger.add_cm(coin_new_2[-1])
+        self.coin_set.remove(coin_old_1)
+        self.coin_set.remove(coin_old_2)
+        tx = TransactionPour(*tx_pour)
+        self.broadcast_new_transaction(tx)
+
+    def receive_coin(self, addr_pk, addr_sk):
+        coin_set = receive(pp, addr_pk, addr_sk, ledger)
+        self.coin_set = set.union(self.coin_set, coin_set)
 
     def run(self):
         """
@@ -31,7 +74,7 @@ class Node(threading.Thread):
         self.init_blockchain()
         NODE_LIST.append({
             "name": self.name,
-            "host": self.host, 
+            "host": self.host,
             "port": self.port
         })
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,7 +91,6 @@ class Node(threading.Thread):
             except Exception as e:
                 print(e, )
             connection.close()
-
 
     def init_blockchain(self):
         """
@@ -74,7 +116,7 @@ class Node(threading.Thread):
             sock.close()
         else:
             # first node, init a genesis block
-            self.blockchain = BlockChain()
+            self.blockchain = Ledger()
             print(self.name, "creates genesis block\n")
             genesis_block = Block(None, [])
             pw = ProofWork(genesis_block, self.wallet)
@@ -112,6 +154,10 @@ class Node(threading.Thread):
                 self.broadcast_new_block(block)
             else:
                 print(self.name, "verify tx fail")
+        elif isinstance(data, TransactionPour):
+            verify_tx_pour(pp, data.tx_pour, ledger)
+        elif isinstance(data, TransactionMint):
+            verify_tx_mint(data.tx_mint)
         elif isinstance(data, Block):
             # receive new block msg
             print(self.name, "handle new block")
@@ -140,7 +186,7 @@ class Node(threading.Thread):
             sock.connect((node["host"], node["port"]))
             sock.send(pickle.dumps(block))
             sock.close()
-    
+
     def broadcast_new_transaction(self, transaction):
         for node in NODE_LIST:
             if node["host"] == self.host and node["port"] == self.port:
