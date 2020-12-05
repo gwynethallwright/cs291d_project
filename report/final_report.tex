@@ -1,6 +1,14 @@
+% !BIB TS-program = biber
+% !BIB program = biber
+
 \documentclass{article}
+\usepackage[utf8]{inputenc}
 \usepackage[top= 2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
 \usepackage{amsmath, amsfonts, graphicx}
+\usepackage{url}
+
+\usepackage[backend=biber, sorting=none]{biblatex}
+\addbibresource{references.bib}
 
 \begin{document}
 
@@ -10,6 +18,7 @@
 \maketitle
 
 \section*{Abstract}
+In this project, we attempt a basic implementation of Zerocash \cite{zerocash} in Python. Zerocash is a ledger-based digital currency that makes use of zero-knowledge Succinct Non-Interactive Arguments of Knowledge (zk-SNARKs) to provide stronger privacy guarantees than currencies such as Bitcoin \cite{bitcoin} and Zerocoin \cite{zerocoin}. This functionality is provided through a decentralized anonymous payment (DAP) scheme that hides a transaction's origin, destination and amount. We follow \cite{zerocash} to implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour}, which form the foundations of Zerocash.
 
 \tableofcontents
 
@@ -20,5 +29,7 @@
 \section{Solution}
 \section{Related Work}
 \section{Evaluation}
+
+\printbibliography
 
 \end{document}
