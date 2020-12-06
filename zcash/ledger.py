@@ -4,6 +4,7 @@ import string
 from merklelib import MerkleTree
 from merklelib.utils import to_hex
 from blockchain.blockchain import BlockChain
+from zcash.transaction import TransactionMint, TransactionPour
 
 
 # reference: merkle tree in golang https://pkg.go.dev/github.com/cbergoon/merkletree#section-sourcefiles
@@ -63,23 +64,72 @@ class Ledger(BlockChain):
     a sequence of transactions
     (BlockChain)
 
-    CMListT denotes the list of all coin commitments appearing in mint and pour transactions in LedgerT
-    SNListT denotes the list of all serial numbers appearing in pour transactions in LedgerT
-    TreeCMT denotes a Merkle tree over CMListT and rtT its root
     rt_list stores all past Merkle tree roots
+
+    txMint is appended to the ledger only if u has paid 1 BTC to a backing escrow pool (e.g.,
+    the 1 BTC may be paid via plaintext information encoded in txMint). Mint transactions are thus
+    certificates of deposit, deriving their value from the backing pool.
     """
     def __init__(self):
         super(Ledger, self).__init__()
-        self.cm_list_t = []
-        self.sn_list_t = []
-        self.tree_cm_t = MerkleTreeLedger(hashobj=hashfunc)
         self.rt_list = []
+
+
+class CMListT:
+    """
+    CMListT denotes the list of all coin commitments appearing in mint and pour transactions in LedgerT
+    """
+    def __init__(self):
+        self.cm_list_t = []
+
+    def build_from_ledger(self, ledger: Ledger):
+        for block in ledger.blocks:
+            for tx in block.txs:
+                if isinstance(tx, TransactionMint):
+                    self.add_cm(tx.tx_mint[0])
+                if isinstance(tx, TransactionPour):
+                    self.add_cm(tx.tx_pour[3])
+                    self.add_cm(tx.tx_pour[4])
+
+    def add_cm(self, cm):
+        self.cm_list_t.append(cm)
+
+
+class TreeCMT:
+    """
+    TreeCMT denotes a Merkle tree over CMListT and rtT its root
+    """
+    def __init__(self):
+        self.tree_cm_t = MerkleTreeLedger(hashobj=hashfunc)
+
+    def build_from_cm_list(self, cm_list):
+        pass
+
+    def add_cm(self, cm):
+        self.tree_cm_t.append(cm)
 
     def get_cm_path(self, cm):
         return self.tree_cm_t.get_path(cm)
 
-    def add_cm(self, cm):
-        self.cm_list_t.append(cm)
+
+class SNListT:
+    """
+    SNListT denotes the list of all serial numbers appearing in pour transactions in LedgerT
+    """
+    def __init__(self):
+        self.sn_list_t = []
+
+    def build_from_ledger(self, ledger: Ledger):
+        for block in ledger.blocks:
+            for tx in block.txs:
+                if isinstance(tx, TransactionPour):
+                    sn_old_1 = tx[1]
+                    sn_old_2 = tx[2]
+                    self.add_sn(sn_old_1)
+                    self.add_sn(sn_old_2)
+
+    def add_sn(self, sn):
+        self.sn_list_t.append(sn)
 
     def verify_sn_inclusion(self, sn):
         return sn in self.sn_list_t

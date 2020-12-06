@@ -39,12 +39,10 @@ def mint(pp, v, addr_pk):
     return coin, tx_mint
 
 
-def verify_tx_mint(tx_mint):
+def verify_tx_mint(tx_mint) -> bool:
     (cm, v, k, s) = tx_mint
     cm_verify = comm_s(v, k)
     if cm_verify == cm:
-        b = 1
+        return True
     else:
-        b = 0
-    return b
-
+        return False

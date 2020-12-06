@@ -1,9 +1,11 @@
 import pickle
 import socket
 import threading
+import os
+import binascii
 
 from zcash.setup import setup
-from zcash.ledger import Ledger
+from zcash.ledger import Ledger, CMListT, SNListT, TreeCMT
 from zcash.create_address import create_address
 from zcash.mint import mint, verify_tx_mint
 from zcash.pour import pour, verify_tx_pour
@@ -13,9 +15,10 @@ from blockchain.wallet import Wallet, Transaction, verify_sign
 from blockchain.blockchain import Block, ProofWork, get_balance
 
 # global variable for all nodes
+security_parameter = binascii.hexlify(os.urandom(256 // 8))
 NODE_LIST = []
 ledger = Ledger()
-pp = setup()
+pp = setup(security_parameter)
 PER_BYTE = 128
 coin_value_max = 2**64 - 1
 
@@ -34,6 +37,9 @@ class Node(threading.Thread):
         self.wallet = Wallet()
         self.coin_set = set()
         self.blockchain = None  # every node save a copy of blockchain
+        self.cm_list = CMListT()
+        self.sn_list = SNListT()
+        self.tree_cm = TreeCMT()
 
     def mint_coin(self, value):
         if value > coin_value_max:
@@ -41,27 +47,31 @@ class Node(threading.Thread):
             return
         coin, tx_mint = mint(pp, value, self.addr_pk)
         self.coin_set.add(coin)
-        ledger.add_cm(coin[-1])
+        self.cm_list.add_cm(coin[-1])
+        self.tree_cm.add_cm(coin[-1])
         tx = TransactionMint(*tx_mint)
-        self.broadcast_new_transaction(tx)
+        return tx
 
-    def pour_coin(self, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, value_new_1, value_new_2, addr_new_pk_1, addr_new_pk_2, value_pub, info):
+    def pour_coin(self, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, value_new_1, value_new_2,
+                  addr_new_pk_1, addr_new_pk_2, value_pub, info):
         """
         value_pub: to redeem coins or pay transaction fees
         """
         cm_1 = coin_old_1[-1]
-        path1 = ledger.get_cm_path(cm_1)
+        path1 = self.tree_cm.tree_cm_t.get_cm_path(cm_1)
         cm_2 = coin_old_2[-1]
-        path2 = ledger.get_cm_path(cm_2)
-        coin_new_1, coin_new_2, tx_pour = pour(pp, ledger.tree_cm_t.merkle_root,
+        path2 = self.tree_cm.tree_cm_t.get_cm_path(cm_2)
+        coin_new_1, coin_new_2, tx_pour = pour(pp, self.tree_cm.tree_cm_t.merkle_root,
                                                coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2,
                                                path1, path2, value_new_1, value_new_2, addr_new_pk_1, addr_new_pk_2, value_pub, info)
-        ledger.add_cm(coin_new_1[-1])
-        ledger.add_cm(coin_new_2[-1])
+        self.cm_list.add_cm(coin_new_1[-1])
+        self.tree_cm.add_cm(coin_new_1[-1])
+        self.cm_list.add_cm(coin_new_2[-1])
+        self.tree_cm.add_cm(coin_new_2[-1])
         self.coin_set.remove(coin_old_1)
         self.coin_set.remove(coin_old_2)
         tx = TransactionPour(*tx_pour)
-        self.broadcast_new_transaction(tx)
+        return tx
 
     def receive_coin(self, addr_pk, addr_sk):
         coin_set = receive(pp, addr_pk, addr_sk, ledger)
@@ -113,6 +123,8 @@ class Node(threading.Thread):
                 if len(buf) < PER_BYTE:
                     break
             self.blockchain = pickle.loads(b''.join(data))
+            self.cm_list.build_from_ledger(self.blockchain)
+            self.sn_list.build_from_ledger(self.blockchain)
             sock.close()
         else:
             # first node, init a genesis block
@@ -127,6 +139,15 @@ class Node(threading.Thread):
         print(self.name, "blockchain")
         self.blockchain.show()
         print('\n')
+
+    def handle_transaction(self, tx):
+        block = Block(prev_hash=self.blockchain.blocks[-1].hash, transactions=[tx])
+        pw = ProofWork(block, self.wallet)
+        pw.mine()
+        print(self.name, "generate new block successfully")
+        self.blockchain.add_block(block)
+        print(self.name, "add new block successfully")
+        self.broadcast_new_block(block)
 
     def handle_request(self, connection):
         """
@@ -145,19 +166,18 @@ class Node(threading.Thread):
             if verify_sign(data.pubkey, str(data), data.sign):
                 print(self.name, "verify tx success")
                 # receive new transaction msg
-                block = Block(prev_hash=self.blockchain.blocks[-1].hash, transactions=[data])
-                pw = ProofWork(block, self.wallet)
-                pw.mine()
-                print(self.name, "generate new block successfully")
-                self.blockchain.add_block(block)
-                print(self.name, "add new block successfully")
-                self.broadcast_new_block(block)
+                self.handle_transaction(data)
             else:
                 print(self.name, "verify tx fail")
         elif isinstance(data, TransactionPour):
             verify_tx_pour(pp, data.tx_pour, ledger)
         elif isinstance(data, TransactionMint):
-            verify_tx_mint(data.tx_mint)
+            if verify_tx_mint(data.tx_mint):
+                print(self.name, "verify mint tx success")
+                # receive new transaction msg
+                self.handle_transaction(data)
+            else:
+                print(self.name, "verify mint tx fail")
         elif isinstance(data, Block):
             # receive new block msg
             print(self.name, "handle new block")
