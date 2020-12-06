@@ -1,0 +1,54 @@
+% !BIB TS-program = biber
+% !BIB program = biber
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[top= 2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{amsmath, amsfonts, graphicx}
+\usepackage{url}
+
+\usepackage[backend=biber, sorting=none]{biblatex}
+\addbibresource{references.bib}
+
+\begin{document}
+
+\title{CS291D Final Report: a Basic Zcash Implementation}
+\author{Gwyneth Allwright, Karl Wang, Dewei Zeng}
+
+\maketitle
+
+\section*{Abstract}
+In this project, we attempt a basic implementation of Zerocash \cite{zerocash} in Python. Zerocash is a ledger-based digital currency that makes use of zero-knowledge Succinct Non-Interactive Arguments of Knowledge (zk-SNARKs) to provide stronger privacy guarantees than currencies such as Bitcoin \cite{bitcoin} and Zerocoin \cite{zerocoin}. This functionality is provided through a decentralized anonymous payment (DAP) scheme that hides a transaction's origin, destination and amount. We follow \cite{zerocash} to implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour}, which form the foundations of Zerocash.
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+Data on blockchains such as Bitcoin is public, including the sender, receiver and the amount of money transferred in a payment. While Bitcoin users often utilize different identities to disguise their transactions, it is possible to gain access to both the structure of the transaction graph and the values and dates of transactions. Zerocoin, a cryptographic extension to Bitcoin, aims to introduce better privacy guarantees without requiring new trusted parties, but it still cannot hide the location that money is sent to, as well as the amount of money that is transferred \cite{zerocoin}. In addition, it lacks some features of fully-fledged cryptocurrencies, such as payments of exact values.
+
+In order to solve these problems with Bitcoin and Zerocoin, a new digital currency known as Zerocash was devised. Zerocash makes the sender, receiver and amount of money transferred in a payment anonymous, while also improving on the efficiency of Zerocoin \cite{zerocash}. These outcomes are achieved with the help of zk-SNARKs, which are efficient variants of zero-knowledge proofs of knowledge. Zero-knowledge proofs allow the prover of a certain statement to demonstrate that the statement in question is true without revealing additional information about the statement that could result in a compromise of privacy.
+
+One of the primary objectives of this project is to explore zk-SNARKs and their potential applications in the world of blockchains and cryptocurrencies. To achieve this, we use existing zk-SNARK tooling to implement a minimal version of Zerocash in Python with the purpose of gaining a better understanding of Zerocash's theoretical underpinnings. This would be a first step towards demonstrating that zk-SNARKs are a feasible method of enhancing the privacy and performance of transactions on a simple blockchain. Next steps would include benchmarking and comparisons to a blockchain with similar functionality that does not make use of zk-SNARKs.
+
+\section{Problem Definition}
+We wish to understand how to incorporate zk-SNARKs into a basic blockchain in order to improve the blockchain's privacy guarantees. The setup of our scheme must not require any trust beyond a one-time trusted setup of public parameters. The implementation needs to support the minting, merging and splitting of coins without exposing the identities of the users who perform the transactions and the amounts of the currency involved. These objectives should be achieved through the use of zk-SNARKs.
+
+\section{Solution}
+As part of our DAP scheme, we implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour}, which are described in \cite{zerocash}. In the sections that follow, we provide an overview of the DAP scheme and describe the important functions that form the the foundations of its implementation.
+
+\subsection{DAP Scheme}
+\subsection{Important Functions}
+\subsubsection{\texttt{Setup}}
+\subsubsection{\texttt{CreateAddress}}
+\subsubsection{\texttt{Receive}}
+\subsubsection{\texttt{Mint}}
+\subsubsection{\texttt{VerifyTransaction}}
+
+\section{Related Work}
+\section{Evaluation}
+
+\newpage
+\printbibliography
+
+\end{document}
