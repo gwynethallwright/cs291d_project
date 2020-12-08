@@ -33,5 +33,9 @@ in directory `zcash`
 - receive.py
 - tools.py: hash function, including prf, crh, sha256
 
+## tx flow
+
+## block flow
+
  Q1:
  [·]128 denotes that we are truncating the 256-bit string to 128 bits (say, by dropping leastsignificant bits, as in our implementation).

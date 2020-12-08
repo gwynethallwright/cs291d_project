@@ -70,11 +70,11 @@ class Node(threading.Thread):
         self.tree_cm.add_cm(coin_new_2[-1])
         self.coin_set.remove(coin_old_1)
         self.coin_set.remove(coin_old_2)
-        tx = TransactionPour(*tx_pour)
+        tx = TransactionPour(*tx_pour[:-1], *tx_pour[-1])
         return tx
 
     def receive_coin(self, addr_pk, addr_sk):
-        coin_set = receive(pp, addr_pk, addr_sk, ledger)
+        coin_set = receive(pp, addr_pk, addr_sk, self.sn_list, ledger)
         self.coin_set = set.union(self.coin_set, coin_set)
 
     def run(self):

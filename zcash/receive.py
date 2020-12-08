@@ -4,7 +4,7 @@ from zcash.tools import comm_s, comm_r, prf_sn
 from zcash.transaction import TransactionPour
 
 
-def receive(pp, addr_pk, addr_sk, sn_list: SNListT):
+def receive(pp, addr_pk, addr_sk, sn_list: SNListT, ledger: Ledger):
     """
     inputs:
     – public parameters pp

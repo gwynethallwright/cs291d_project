@@ -36,16 +36,18 @@ def prf_sn(sk: bytes, p: bytes):
     p = hex((p >> 2) | 1 << 254)[2:].encode('utf-8')
     return hash_sha256(sk, p)
 
-def prf_pk(x:bytes, z:bytes):
-    """
-    sha256(x||10||256)
 
-    x = {0, 1} * 256
-    z = {0, 1} * 254
+def prf_pk(sk: bytes, pk_sig: bytes):
     """
-    z = int(str(z), 16)
-    z = hex((z >> 2) | 1 << 255)[2:].encode('utf-8')
-    return hash_sha256(x, z)
+    sha256(sk||10||256)
+
+    sk = {0, 1} * 256
+    pk_sig = {0, 1} * 254
+    """
+    pk_sig = int(pk_sig.decode('utf-8'), 16)
+    pk_sig = hex((pk_sig >> 2) | 1 << 255)[2:].encode('utf-8')
+    return hash_sha256(sk, pk_sig)
+
 
 def comm_r(r:bytes, a_pk, p) -> str:
     """
@@ -97,7 +99,10 @@ def tuple_to_str(data: tuple) -> str:
         if isinstance(i, int):
             data_str.append(str(i))
         elif isinstance(i, bytes):
-            data_str.append(i.decode('utf-8'))
+            try:
+                data_str.append(i.decode('utf-8'))
+            except:
+                data_str.append(i.decode('unicode_escape'))
         elif isinstance(i, tuple):
             data_str.append(tuple_to_str(i))
         else:

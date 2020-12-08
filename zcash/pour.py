@@ -62,14 +62,13 @@ def pour(pp, rt, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, path1, pa
 
     sk_sig, pk_sig = K_sig(pp_sig)
     h_sig = CRH(pk_sig)
-    h1 = prf_pk(a_sk_old_1, concat(1, h_sig))
-    h2 = prf_pk(a_sk_old_2, concat(2, h_sig))
+    h1 = prf_pk(a_sk_old_1, str(concat(1, h_sig)).encode('utf-8'))
+    h2 = prf_pk(a_sk_old_2, str(concat(2, h_sig)).encode('utf-8'))
     x_pub = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, value_pub, h_sig, h1, h2)  # public input of circuir of pour
     a_private = (path1, path2, coin_old_1, coin_old_2,
                  addr_old_sk_1, addr_old_sk_2, coin_new_1, coin_new_2)    # private input of circuir of pour
     proof_pour = circuit_prove(pk_pour, x_pub, a_private)
     msg = (x_pub, proof_pour, info, Ciphertext_1, Ciphertext_2)
-    print(msg)
     sign = S_sig(sk_sig, tuple_to_str(msg))
     tx_pour = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, value_pub, info,
                (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign))
