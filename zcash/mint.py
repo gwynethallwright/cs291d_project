@@ -35,7 +35,7 @@ def mint(pp, v, addr_pk):
     cm = comm_s(v, k)
 
     coin = (addr_pk, v, p, r, s, cm)
-    tx_mint = (cm, v, k, s)
+    tx_mint = (cm, str(v), k, str(s))
     return coin, tx_mint
 
 

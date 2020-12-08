@@ -58,9 +58,9 @@ class Node(threading.Thread):
         value_pub: to redeem coins or pay transaction fees
         """
         cm_1 = coin_old_1[-1]
-        path1 = self.tree_cm.tree_cm_t.get_cm_path(cm_1)
+        path1 = self.tree_cm.get_cm_path(cm_1)
         cm_2 = coin_old_2[-1]
-        path2 = self.tree_cm.tree_cm_t.get_cm_path(cm_2)
+        path2 = self.tree_cm.get_cm_path(cm_2)
         coin_new_1, coin_new_2, tx_pour = pour(pp, self.tree_cm.tree_cm_t.merkle_root,
                                                coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2,
                                                path1, path2, value_new_1, value_new_2, addr_new_pk_1, addr_new_pk_2, value_pub, info)

@@ -126,10 +126,11 @@ def get_balance(user, chain: BlockChain):
     balance = 0
     for block in chain.blocks:
         for tx in block.txs:
-            if tx.sender == user.address.decode():
-                balance -= tx.amount
-            elif tx.receiver == user.address.decode():
-                balance += tx.amount
+            if isinstance(tx, Transaction):
+                if tx.sender == user.address.decode():
+                    balance -= tx.amount
+                elif tx.receiver == user.address.decode():
+                    balance += tx.amount
     return balance
 
 def test_chain():

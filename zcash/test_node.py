@@ -27,10 +27,12 @@ node1.get_balance()
 node2.get_balance()
 
 # node1 mint and pour to send to node2
-tx = node1.mint_coin(1)
+tx1 = node1.mint_coin(1)
+tx2 = node1.mint_coin(1)
 coin_old_1 = list(node1.coin_set)[0]
-print(coin_old_1)
-# node1.pour_coin(coin_old_1, )
+coin_old_2 = list(node1.coin_set)[0]
+# print(coin_old_1)
+tx3 = node1.pour_coin(coin_old_1, coin_old_2, node1.addr_sk, node1.addr_sk, 1, 1, node2.addr_pk, node2.addr_pk, 0, "")
 
 
 # tx = Transaction(sender=node1.wallet.address, receiver=node2.wallet.address, amount=0.3)
@@ -38,7 +40,7 @@ print(coin_old_1)
 # tx.set_sign(node1.wallet.pubkey, sig)
 
 
-node1.broadcast_new_transaction(tx)
+node1.broadcast_new_transaction(tx3)
 # waiting for tx broadcast
 time.sleep(30)
 

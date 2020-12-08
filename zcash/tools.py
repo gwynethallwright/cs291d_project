@@ -24,16 +24,17 @@ def prf_addr(x:bytes, z:bytes):
     z = hex(z >> 2)[2:].encode('utf-8')
     return hash_sha256(x, z)
 
-def prf_sn(x:bytes, z:bytes):
-    """
-    sha256(x||01||z)
 
-    z = {0, 1} * 256
-    x = {0, 1} * 256
+def prf_sn(sk: bytes, p: bytes):
     """
-    z = int(str(z), 16)
-    z = hex((z >> 2) | 1 << 254)[2:].encode('utf-8')
-    return hash_sha256(x, z)
+    sha256(sk||01||p)
+
+    p = {0, 1} * 256 # random
+    sk = {0, 1} * 256 # secret key
+    """
+    p = int(p.decode('utf-8'), 16)
+    p = hex((p >> 2) | 1 << 254)[2:].encode('utf-8')
+    return hash_sha256(sk, p)
 
 def prf_pk(x:bytes, z:bytes):
     """
@@ -65,6 +66,8 @@ def comm_s(v:int, k) -> str:
     output:
         str
     """
+    if isinstance(v, str):
+        v = int(v)
     v_b = bytes(str(v), encoding='utf-8').zfill(64//4)
     return hash_sha256(k, b'0' * (192//4), v_b)
 
@@ -86,3 +89,17 @@ def hash_sha256(*args) -> str:
         input += v
     msg.update(input)
     return msg.hexdigest()
+
+
+def tuple_to_str(data: tuple) -> str:
+    data_str = []
+    for i in data:
+        if isinstance(i, int):
+            data_str.append(str(i))
+        elif isinstance(i, bytes):
+            data_str.append(i.decode('utf-8'))
+        elif isinstance(i, tuple):
+            data_str.append(tuple_to_str(i))
+        else:
+            data_str.append(i)
+    return ','.join(data_str)

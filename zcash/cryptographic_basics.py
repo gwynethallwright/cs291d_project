@@ -20,19 +20,21 @@ from ecies.utils import generate_eth_key
 security_parameter = os.urandom(256 // 8)
 
 
-def K_sig(pp_sig):
+def K_sig(pp_sig) -> (str, str):
     """
     output:
         pk_sig, sk_sig
     """
     sk = SigningKey.generate(curve=SECP256k1)
     pk = sk.get_verifying_key().to_pem()
+    sk = sk.to_pem()
     return sk, pk
 
 
-def S_sig(sk_sig, m: str) -> bytes:
+def S_sig(sk_sig: str, m: str) -> bytes:
+    sk = SigningKey.from_pem(sk_sig)
     h = hashlib.sha256(m.encode('utf-8'))
-    return binascii.hexlify(sk_sig.sign(h.digest()))
+    return binascii.hexlify(sk.sign(h.digest()))
 
 
 def V_sig(pk_sig, m, sigma: bytes) -> bool:
@@ -47,7 +49,7 @@ def test_sig():
     sk, pk = K_sig(1)
     m = '1'
     sign = S_sig(sk, m)
-    print(V_sig(pk, m, sign))
+    return V_sig(pk, m, sign)
 
 
 def K_enc(pp_enc):
@@ -57,7 +59,7 @@ def K_enc(pp_enc):
     return public_key_hex, private_key_hex
 
 
-def E_enc(pk_enc, m):
+def E_enc(pk_enc, m) -> bytes:
     if not isinstance(m, bytes):
         m = bytes(m, 'utf-8')
     return encrypt(pk_enc, m)
@@ -78,5 +80,5 @@ def test_enc():
 
 
 if __name__ == '__main__':
-    test_sig()
+    print(test_sig())
     print(test_enc())

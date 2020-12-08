@@ -15,7 +15,7 @@ def circuit_setup(security_parameter):
 
 
 def circuit_prove(pk_pour, x, a):
-    proof_pour = 1
+    proof_pour = '1'
     return proof_pour
 
 

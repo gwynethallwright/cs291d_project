@@ -5,14 +5,20 @@ class TransactionPour:
                    (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign))
         self.tx_pour = tx_pour
 
+    def __repr__(self):
+        return ','.join(self.tx_pour)
+
 
 class TransactionMint:
     """
     consumes the input bitcoins to produce zerocoins
     """
-    def __init__(self, cm, v, k, s):
+    def __init__(self, cm: str, v: str, k: str, s: str):
         tx_mint = (cm, v, k, s)
         self.tx_mint = tx_mint
+
+    def __repr__(self):
+        return ','.join(self.tx_mint)
 
 
 class Coin:
