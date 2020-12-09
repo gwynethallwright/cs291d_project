@@ -4,8 +4,8 @@ from zcash.mint import mint
 from zcash.pour import pour
 from zcash.ledger import MerkleTreeLedger
 
-class Test_TestPour(unittest.TestCase):
-    def test_comm_r(self):
+class TestPour(unittest.TestCase):
+    def test_pour(self):
         tree = MerkleTreeLedger()
         pp, v_1, addr_pk_1 = (1, 1, 1, 1), 1, (b'0' * (256 // 4), 1)
         c_1, tx_mint = mint(pp, v_1, addr_pk_1)

@@ -3,7 +3,7 @@ import unittest
 import binascii, os
 from zcash import mint, tools
 
-class Test_TestMint(unittest.TestCase):
+class TestMint(unittest.TestCase):
     def test_comm_r(self):
         pp, v, addr_pk = (1, 1, 1, 1), 1, (b'0' * (256 // 4), 1)
         # parse addr_pk
