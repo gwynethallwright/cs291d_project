@@ -32,17 +32,57 @@ In order to solve these problems with Bitcoin and Zerocoin, a new digital curren
 One of the primary objectives of this project is to explore zk-SNARKs and their potential applications in the world of blockchains and cryptocurrencies. To achieve this, we use existing zk-SNARK tooling to implement a minimal version of Zerocash in Python with the purpose of gaining a better understanding of Zerocash's theoretical underpinnings. This would be a first step towards demonstrating that zk-SNARKs are a feasible method of enhancing the privacy and performance of transactions on a simple blockchain. Next steps would include benchmarking and comparisons to a blockchain with similar functionality that does not make use of zk-SNARKs.
 
 \section{Problem Definition}
-We wish to understand how to incorporate zk-SNARKs into a basic blockchain in order to improve the blockchain's privacy guarantees. The setup of our scheme must not require any trust beyond a one-time trusted setup of public parameters. The implementation needs to support the minting, merging and splitting of coins without exposing the identities of the users who perform the transactions and the amounts of the currency involved. These objectives should be achieved through the use of zk-SNARKs.
+We wish to understand how to incorporate zk-SNARKs into a basic blockchain in order to improve the blockchain's privacy guarantees. The setup of our scheme must not require any trust beyond a one-time trusted setup of public parameters. The implementation needs to support the minting, merging and splitting of coins without exposing the identities of the users who perform the transactions and the amounts of the currency involved.
 
 \section{Solution}
-As part of our DAP scheme, we implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour}, which are described in \cite{zerocash}. In the sections that follow, we provide an overview of the DAP scheme and describe the important functions that form the the foundations of its implementation.
+The above objectives can be achieved through the combination of zk-SNARKs and a decentralized anonymous payment (DAP) scheme. As part of the Zerocash DAP scheme, we implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour}, which are described in \cite{zerocash}. In the sections that follow, we provide an overview of the DAP scheme and describe these important functions that form the the foundations of its implementation.
 
 \subsection{DAP Scheme}
+\subsubsection{Basecoin}
+The Zerocash protocol is applied on top of a ledger-based currency (e.g.\ Bitcoin). This ledger-based currency is referred to as the \emph{basecoin}. All basecoin transactions are recorded in an append-only ledger, which can be accessed by all Zerocash users at all times.
+
+In addition to the basecoin transactions, Zerocash includes two new kinds of transactions --- minting and pouring --- which will be described later. Mint and pour transactions are also recorded in the basecoin ledger.
+
+\subsubsection{Public Parameters}
+In addition to the basecoin ledger, users have access to a set of public parameters. These are part of the one-time trusted setup that takes place before other functions are allowed to execute.
+
+\subsubsection{Address Key Pairs}
+Users may generate as many public and private address key pairs as they desire. The public address keys are published with the purpose of allowing users to make payments among themselves. The secret keys are used for receiving payments.
+
+\subsubsection{Coins}
+Coins are data structures that encapsulate the following information:
+\begin{itemize}
+\item A coin commitment, which is a string that we append to the basecoin ledger once the coin is minted.
+\item A coin value (between 0 and some parameter v$_{\text{max}}$) that specifies the coin denomination in basecoin units.
+\item A coin serial number, which is a string that uniquely identifies the coin and is used to prevent double-spending.
+\item A coin address --- the public address key of the user who owns the coin.
+\end{itemize}
+
+\subsubsection{Coin-Related Data Structures}
+The Zerocash protocol requires us to maintain the following coin-related information:
+\begin{itemize}
+\item A Merkle tree over coin commitments.
+\item A list of coin commitments that appear in mint and pour transactions.
+\item A list of all coin serial numbers that appear in pour transactions.
+\end{itemize}
+For efficiency reasons, it is useful to store the latter two lists (which could also be obtained from the basecoin ledger) separately.
+
+\subsubsection{Mint}
+Mint transactions are used to create coins. At its most basic, a mint transaction can be described as a tuple $(\text{cm}, v)$, where $\text{cm}$ is the commitment of the minted coin and $v$ is its value. Whenever a coin is minted, this tuple is placed on the basecoin ledger.
+
+\subsubsection{Pour}
+Pour transactions record the pouring of two input coins into two new output coins (thereby spending the two initial coins). At its most basic, a pour transaction can be described as a tuple $(\text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, \text{info})$, where rt is the root of the Merkle tree over coin commitments, the sn are the serial numbers of the old coins, the cm are the commitments of the new coins, $v_{\text{pub}}$ is a coin value and info is an arbitrary string. Pour transactions may also include implementation-specific information.
+
+\subsubsection{Summary}
+
+The DAP scheme described above is implemented by means of a tuple of polynomial-time algorithms (\texttt{Setup}, \texttt{CreateAddress}, \texttt{Mint}, \texttt{Pour}, \texttt{VerifyTransaction}, \texttt{Receive}). In the following subsection, we describe their arguments, outputs and purpose.
+
 \subsection{Important Functions}
 \subsubsection{\texttt{Setup}}
 \subsubsection{\texttt{CreateAddress}}
-\subsubsection{\texttt{Receive}}
 \subsubsection{\texttt{Mint}}
+\subsubsection{\texttt{Pour}}
+\subsubsection{\texttt{Receive}}
 \subsubsection{\texttt{VerifyTransaction}}
 
 \section{Related Work}
