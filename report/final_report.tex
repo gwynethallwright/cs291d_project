@@ -18,7 +18,7 @@
 \maketitle
 
 \section*{Abstract}
-In this project, we attempt a basic implementation of Zerocash \cite{zerocash} in Python. Zerocash is a ledger-based digital currency that makes use of zero-knowledge Succinct Non-Interactive Arguments of Knowledge (zk-SNARKs) to provide stronger privacy guarantees than currencies such as Bitcoin \cite{bitcoin} and Zerocoin \cite{zerocoin}. This functionality is provided through a decentralized anonymous payment (DAP) scheme that hides a transaction's origin, destination and amount. We follow \cite{zerocash} to implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour}, which form the foundations of Zerocash.
+In this project, we attempt a basic implementation of Zerocash \cite{zerocash} in Python. Zerocash is a ledger-based digital currency that makes use of zero-knowledge Succinct Non-Interactive Arguments of Knowledge (zk-SNARKs) to provide stronger privacy guarantees than currencies such as Bitcoin \cite{bitcoin} and Zerocoin \cite{zerocoin}. This functionality is provided through a decentralized anonymous payment (DAP) scheme that hides a transaction's origin, destination and amount. We follow \cite{zerocash} to implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction}, \texttt{Pour}, \texttt{KeyGen}, \texttt{Prove} and \texttt{Verify}, which form the foundations of Zerocash.
 
 \tableofcontents
 
@@ -35,7 +35,7 @@ One of the primary objectives of this project is to explore zk-SNARKs and their 
 We wish to understand how to incorporate zk-SNARKs into a basic blockchain in order to improve the blockchain's privacy guarantees. The setup of our scheme must not require any trust beyond a one-time trusted setup of public parameters. The implementation needs to support the minting, merging and splitting of coins without exposing the identities of the users who perform the transactions and the amounts of the currency involved.
 
 \section{Solution}
-The above objectives can be achieved through the combination of zk-SNARKs and a decentralized anonymous payment (DAP) scheme. As part of the Zerocash DAP scheme, we implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour}, which are described in \cite{zerocash}. In the sections that follow, we provide an overview of the DAP scheme and describe these important functions that form the the foundations of its implementation.
+The above objectives can be achieved through the combination of zk-SNARKs and a decentralized anonymous payment (DAP) scheme. As part of the Zerocash DAP scheme, we implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour} \cite{zerocash}. For the zk-SNARK, we require the additional functions (\texttt{KeyGen}, \texttt{Prove}, \texttt{Verify}) \cite{zerocash}. In the sections that follow, we provide an overview of the DAP scheme, zk-SNARK and the associated functions just mentioned.
 
 \subsection{DAP Scheme}
 \subsubsection{Basecoin}
@@ -67,20 +67,36 @@ The Zerocash protocol requires us to maintain the following coin-related informa
 \end{itemize}
 For efficiency reasons, it is useful to store the latter two lists (which could also be obtained from the basecoin ledger) separately.
 
-\subsubsection{Mint}
+\subsubsection{New Transaction 1: Mint}
 Mint transactions are used to create coins. At its most basic, a mint transaction can be described as a tuple $(\text{cm}, v)$, where $\text{cm}$ is the commitment of the minted coin and $v$ is its value. Whenever a coin is minted, this tuple is placed on the basecoin ledger.
 
-\subsubsection{Pour}
+\subsubsection{New Transaction 2: Pour}
 Pour transactions record the pouring of two input coins into two new output coins (thereby spending the two initial coins). At its most basic, a pour transaction can be described as a tuple $(\text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, \text{info})$, where rt is the root of the Merkle tree over coin commitments, the sn are the serial numbers of the old coins, the cm are the commitments of the new coins, $v_{\text{pub}}$ is a coin value and info is an arbitrary string. Pour transactions may also include implementation-specific information.
 
-\subsubsection{Summary}
+\subsection{zk-SNARK}
 
-The DAP scheme described above is implemented by means of a tuple of polynomial-time algorithms (\texttt{Setup}, \texttt{CreateAddress}, \texttt{Mint}, \texttt{Pour}, \texttt{VerifyTransaction}, \texttt{Receive}). In the following subsection, we describe their arguments, outputs and purpose.
+\subsection{Summary}
+
+The DAP scheme described above is implemented by means of a tuple of polynomial-time algorithms (\texttt{Setup}, \texttt{CreateAddress}, \texttt{Mint}, \texttt{Pour}, \texttt{VerifyTransaction}, \texttt{Receive}). The zk-SNARK consists of a tuple of polynomial-time functions (\texttt{KeyGen}, \texttt{Prove}, \texttt{Verify}). In the following subsection, we describe the arguments, outputs and interrelation of these functions.
 
 \subsection{Important Functions}
+
 \subsubsection{\texttt{Setup}}
+The purpose of \texttt{Setup} is to perform the one-time trusted setup of public parameters. It takes as input a security parameter and produces the following list of public parameters as output:
+\begin{itemize}
+\item (pk$_{\text{POUR}}$, vk$_{\text{POUR}}$): a proving and verification key pair for the zk-SNARK.
+\item pp$_{\text{enc}}$: parameters for the encryption scheme.
+\item pp$_{\text{sig}}$: parameters for the digital signature scheme.
+\end{itemize}
+All three of the above are functions of the provided security parameter.
+
 \subsubsection{\texttt{CreateAddress}}
+The purpose of \texttt{CreateAddress} is to generate public-private address key pairs for users. It takes as input the public parameters generated by \texttt{Setup} and produces a key pair as output.
+
 \subsubsection{\texttt{Mint}}
+\subsubsection{\texttt{KeyGen}}
+\subsubsection{\texttt{Prove}}
+\subsubsection{\texttt{Verify}}
 \subsubsection{\texttt{Pour}}
 \subsubsection{\texttt{Receive}}
 \subsubsection{\texttt{VerifyTransaction}}
