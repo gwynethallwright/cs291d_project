@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iostream>
 
 #include "libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp"
 #include "libff/algebra/curves/public_params.hpp"
@@ -12,6 +13,11 @@ void print_vk_to_file(r1cs_ppzksnark_verification_key<ppT> vk, string pathToFile
 {
   ofstream vk_data;
   vk_data.open(pathToFile);
+  
+  if(!vk_data){
+    cout << "failed to open " << pathToFile << endl;
+    return;
+  }
 
   G2<ppT> A(vk.alphaA_g2);
   A.to_affine_coordinates();
@@ -73,6 +79,11 @@ void print_proof_to_file(r1cs_ppzksnark_proof<ppT> proof, string pathToFile)
 {
   ofstream proof_data;
   proof_data.open(pathToFile);
+
+  if(!proof_data){
+    cout << "failed to open " << pathToFile << endl;
+    return;
+  }
 
   G1<ppT> A_g(proof.g_A.g);
   A_g.to_affine_coordinates();
