@@ -74,6 +74,28 @@ Mint transactions are used to create coins. At its most basic, a mint transactio
 Pour transactions record the pouring of two input coins into two new output coins (thereby spending the two initial coins). At its most basic, a pour transaction can be described as a tuple $(\text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, \text{info})$, where rt is the root of the Merkle tree over coin commitments, the sn are the serial numbers of the old coins, the cm are the commitments of the new coins, $v_{\text{pub}}$ is a coin value and info is an arbitrary string. Pour transactions may also include implementation-specific information.
 
 \subsection{zk-SNARK}
+\subsubsection{Arithmetic Circuits}
+For a given field $\mathbb{F}$, an arithmetic circuit $C$ takes as input $n$ field elements $\in \mathbb{F}$ and returns $m$ field elements $\in \mathbb{F}$. We can therefore think of $C$ as a map $\mathbb{F}^n \longrightarrow \mathbb{F}^m$.
+
+In the Zerocash construction, we decompose the circuit input that lives in $\mathbb{F}^n$ into a main input and auxiliary input, where the latter is known as the \emph{witness}. If the dimensions of these two subinputs are $u$ and $v$ respectively, then we can write $C$: $\mathbb{F}^u \times \mathbb{F}^v \longrightarrow \mathbb{F}^m$.
+
+\subsubsection{Circuit Satisfiability}
+zk-SNARKs can be described in terms of arithmetic circuit satisfiability. The key relationship involved is the following:
+
+\begin{equation}
+\text{For a given} \,\,\, X \in \mathbb{F}^u, \,\,\, \exists A \in \mathbb{F}^v \,\,\, \text{such that} \,\,\, C(X, A) = 0^{m}.
+\label{zk-snark-definition}
+\end{equation}
+\newline
+
+The set of all $X$ that satisfy Equation \ref{zk-snark-definition} form the set $\mathbb{L}_C$. The statement that a prover would want to demonstrate is that for a given $X$, we have $X \in \mathbb{L}_C$.
+
+\subsubsection{Properties}
+\begin{itemize}
+\item Completeness:
+\item Succinctness:
+\item Zero knowledge:
+\end{itemize}
 
 \subsection{Summary}
 
