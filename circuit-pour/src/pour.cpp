@@ -5,6 +5,7 @@
 #include "libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp"
 #include "libsnark/common/default_types/r1cs_ppzksnark_pp.hpp"
 #include "libsnark/gadgetlib1/pb_variable.hpp"
+#include "libsnark/gadgetlib1/gadgets/hashes/sha256/sha256_gadget.hpp"
 
 #include "util.hpp"
 
@@ -61,6 +62,29 @@ int main(){
     
     //requirement 1.d & 1.e
     //The coin c^old_i and c^new_i is well formed
+    //https://github.com/scipr-lab/libsnark/blob/master/libsnark/gadgetlib1/gadgets/hashes/sha256/tests/test_sha256_gadget.cpp
+    //k := COMM_r(a_pk||rho)
+    digest_variable<FieldT> a_pk(pb, SHA256_digest_size, "a_pk");
+    digest_variable<FieldT> rho(pb, SHA256_digest_size, "rho");
+    digest_variable<FieldT> output(pb, SHA256_digest_size, "output");
+
+    sha256_two_to_one_hash_gadget<FieldT> f(pb, a_pk, rho, output, "f");
+    f.generate_r1cs_constraints();
+    printf("Number of constraints for sha256_two_to_one_hash_gadget: %zu\n", pb.num_constraints());
+
+    const libff::bit_vector left_bv, right_bv, hash_bv;
+    //TODO: initalize bit_vectors
+
+    a_pk.generate_r1cs_witness(left_bv);
+    rho.generate_r1cs_witness(right_bv);
+
+    f.generate_r1cs_witness();
+    output.generate_r1cs_witness(hash_bv);
+
+    assert(pb.is_satisfied());
+
+    //cm := COMM_s(v||k)
+    
 
     //requirement 1.f
     //The address secret key a^old_sk,i ties h_Sig to h_i
@@ -89,7 +113,7 @@ int main(){
 
     r1cs_ppzksnark_keypair<default_r1cs_ppzksnark_pp> keypair = r1cs_ppzksnark_generator<default_r1cs_ppzksnark_pp>(constraint_system);
 
-    pb.val(___) = 35;
+    pb.val(coin_new_1_value) = 35;
 
     r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof = r1cs_ppzksnark_prover<default_r1cs_ppzksnark_pp>(keypair.pk, pb.primary_input(), pb.auxiliary_input());
 
