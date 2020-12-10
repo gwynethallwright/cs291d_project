@@ -27,11 +27,11 @@ def receive(pp, addr_pk, addr_sk, sn_list: SNListT, ledger: Ledger):
                     coin_set.add(c_1)
                 if c_2:
                     coin_set.add(c_2)
+    return coin_set
 
 
 def verify_cm_and_sn(sk_enc, addr_pk, a_pk, a_sk, sn_list: SNListT, Ciphertext, cm):
     text_bytes = D_enc(sk_enc, Ciphertext)
-    print(len(text_bytes))
     (v, p, r, s) = (text_bytes[0:(64//4)], text_bytes[(64//4):(320//4)], text_bytes[(320//4):(704//4)],
                     text_bytes[(704//4):(960//4)])
     k = comm_r(r, a_pk, p)

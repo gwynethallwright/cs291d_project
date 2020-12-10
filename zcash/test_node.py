@@ -31,11 +31,13 @@ tx1 = node1.mint_coin(1)
 node1.broadcast_new_transaction(tx1)
 # waiting for tx broadcast
 time.sleep(2)
+node1.show_coin()
 
 tx2 = node1.mint_coin(1)
 node1.broadcast_new_transaction(tx2)
 # waiting for tx broadcast
 time.sleep(2)
+node1.show_coin()
 
 coin_old_1 = list(node1.coin_set)[0]
 coin_old_2 = list(node1.coin_set)[1]
@@ -49,6 +51,8 @@ sn_list = [tx3.tx_pour[1], tx3.tx_pour[2]]
 node1.broadcast_new_transaction(tx3)
 # waiting for tx broadcast
 time.sleep(2)
+node1.show_coin()
+node2.show_coin()
 
 node2.receive_coin(node2.addr_pk, node2.addr_sk)
 node2.print_blockchain()

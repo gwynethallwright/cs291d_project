@@ -245,3 +245,17 @@ class Node(threading.Thread):
             sock.connect((node["host"], node["port"]))
             sock.send(pickle.dumps(transaction))
             sock.close()
+
+    def show_coin(self):
+        for coin in list(self.coin_set):
+            print(self.name, ' coin is', coin)
+        print(self.name, ' zcash balance is', self.get_zcash_balance())
+
+    def get_zcash_balance(self):
+        balance = 0
+        for coin in list(self.coin_set):
+            value = coin[1]
+            if isinstance(value, bytes):
+                value = int(value.decode('utf-8'), 10)
+            balance += value
+        return balance
