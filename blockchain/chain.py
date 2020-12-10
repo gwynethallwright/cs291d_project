@@ -5,7 +5,7 @@ from datetime import datetime
 from .wallet import Transaction, TransactionEncoder, Wallet, verify_sign
 
 MINE_REWARD = 1
-DEFAULT_DIFFICULTY = 5
+DEFAULT_DIFFICULTY = 3
 
 
 class Block:

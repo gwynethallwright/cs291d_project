@@ -56,6 +56,7 @@ def pour(pp, rt, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, path1, pa
     Ciphertext_1 = E_enc(pk_enc, tuple_to_bytes((value_new_1, p_new_1, r_new_1, s_new_1)))
     Ciphertext_2 = E_enc(pk_enc, tuple_to_bytes((value_new_2, p_new_2, r_new_2, s_new_2)))
 
+
     # compute old sn
     sn_old_1 = prf_sn(a_sk_old_1, p_old_1)
     sn_old_2 = prf_sn(a_sk_old_2, p_old_2)

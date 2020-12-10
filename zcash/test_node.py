@@ -7,17 +7,17 @@ node1 = Node(8002, "node 1")
 node1.start()
 
 # wait for string
-time.sleep(5)
+time.sleep(2)
 node1.print_blockchain()
 
-time.sleep(10)
+time.sleep(2)
 node2 = Node(8003, "node 2")
 
 
 node2.start()
 
 # wait for string
-time.sleep(5)
+time.sleep(2)
 node2.print_blockchain()
 
 
@@ -30,12 +30,12 @@ node2.get_balance()
 tx1 = node1.mint_coin(1)
 node1.broadcast_new_transaction(tx1)
 # waiting for tx broadcast
-time.sleep(30)
+time.sleep(2)
 
 tx2 = node1.mint_coin(1)
 node1.broadcast_new_transaction(tx2)
 # waiting for tx broadcast
-time.sleep(30)
+time.sleep(2)
 
 coin_old_1 = list(node1.coin_set)[0]
 coin_old_2 = list(node1.coin_set)[1]
@@ -48,9 +48,9 @@ sn_list = [tx3.tx_pour[1], tx3.tx_pour[2]]
 
 node1.broadcast_new_transaction(tx3)
 # waiting for tx broadcast
-time.sleep(60)
+time.sleep(2)
 
-# node2.receive_coin(node2.addr_pk, node2.addr_sk)
+node2.receive_coin(node2.addr_pk, node2.addr_sk)
 node2.print_blockchain()
 
 

@@ -61,6 +61,7 @@ def comm_r(r:bytes, a_pk, p) -> str:
     str_h = hash_sha256(a_pk, p)[:128//4]
     return hash_sha256(r, bytes(str_h, encoding='utf-8'))
 
+
 def comm_s(v:int, k) -> str:
     """
     input:
@@ -70,8 +71,10 @@ def comm_s(v:int, k) -> str:
     """
     if isinstance(v, str):
         v = int(v)
-    v_b = bytes(str(v), encoding='utf-8').zfill(64//4)
-    return hash_sha256(k, b'0' * (192//4), v_b)
+    if isinstance(v, int):
+        v = bytes(str(v), encoding='utf-8').zfill(64//4)
+    return hash_sha256(k, b'0' * (192//4), v)
+
 
 def CRH(*args):
     return hash_sha256(*args)
@@ -114,7 +117,7 @@ def tuple_to_bytes(data: tuple) -> bytes:
     data_bytes = b''
     for i in data:
         if isinstance(i, int):
-            data_bytes += str(i).encode('utf-8')
+            data_bytes += bytes(str(1), encoding='utf-8').zfill(64 // 4)
         elif isinstance(i, str):
             data_bytes += i.encode('utf-8')
         elif isinstance(i, tuple):
@@ -122,3 +125,4 @@ def tuple_to_bytes(data: tuple) -> bytes:
         else:
             data_bytes += i
     return data_bytes
+

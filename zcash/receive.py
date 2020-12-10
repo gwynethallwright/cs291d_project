@@ -19,8 +19,8 @@ def receive(pp, addr_pk, addr_sk, sn_list: SNListT, ledger: Ledger):
     for block in ledger.blocks:
         for tx in block.txs:
             if isinstance(tx, TransactionPour):
-                (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, v_pub, info,
-                 (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign)) = tx
+                (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, v_pub, info) = tx.tx_pour[:-1]
+                (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign) = tx.tx_pour[-1]
                 c_1 = verify_cm_and_sn(sk_enc, addr_pk, a_pk, a_sk, sn_list, Ciphertext_1, cm_new_1)
                 c_2 = verify_cm_and_sn(sk_enc, addr_pk, a_pk, a_sk, sn_list, Ciphertext_2, cm_new_2)
                 if c_1:
@@ -30,11 +30,14 @@ def receive(pp, addr_pk, addr_sk, sn_list: SNListT, ledger: Ledger):
 
 
 def verify_cm_and_sn(sk_enc, addr_pk, a_pk, a_sk, sn_list: SNListT, Ciphertext, cm):
-    text_str = D_enc(sk_enc, Ciphertext)
-    (v, p, r, s) = tuple(text_str.split(','))
+    text_bytes = D_enc(sk_enc, Ciphertext)
+    print(len(text_bytes))
+    (v, p, r, s) = (text_bytes[0:(64//4)], text_bytes[(64//4):(320//4)], text_bytes[(320//4):(704//4)],
+                    text_bytes[(704//4):(960//4)])
     k = comm_r(r, a_pk, p)
     sn = prf_sn(a_sk, p)
-    if (cm == comm_s(v, k)) and sn_list.verify_sn_inclusion(sn):
+    cm_new = comm_s(v, k)
+    if (cm == cm_new) and not sn_list.verify_sn_inclusion(sn):
         c = (addr_pk, v, p, r, s, cm)
         return c
     return None

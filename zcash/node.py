@@ -70,7 +70,7 @@ class Node(threading.Thread):
         return tx
 
     def receive_coin(self, addr_pk, addr_sk):
-        coin_set = receive(pp, addr_pk, addr_sk, self.sn_list, ledger)
+        coin_set = receive(pp, addr_pk, addr_sk, self.sn_list, self.ledger)
         self.coin_set = set.union(self.coin_set, coin_set)
 
     def run(self):
