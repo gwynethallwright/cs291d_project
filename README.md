@@ -33,17 +33,17 @@ in directory `zcash`
 - receive.py
 - tools.py: hash function, including prf, crh, sha256
 
-## tx flow
+## transaction data flow
 Transaction(object) -> bytes -> (send by socket) -> bytes -> Transaction(object)
 
 tx mine to get a block
 block of mint tx has 2 txs, [mint tx, tx]
 
-## block flow
+## block data flow
 Block(object) -> bytes -> (send by socket) -> bytes -> Block(object)
 
-## mine
-hash(bytes of transaction_list, etc)
+## mine work flow
+hash(str(transaction_list), etc)
 
 ## merkle tree
 
