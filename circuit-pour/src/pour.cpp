@@ -19,7 +19,67 @@ using namespace std;
 
 typedef libff::Fr<default_r1cs_ppzksnark_pp> FieldT;
 
-void generate_proof(string path, int v_value_pub, int v_coin_new_1_value, int v_coin_new_2_value, int v_coin_old_1_value, int v_coin_old_2_value){
+extern "C"
+{
+    void c_generate_proof(int gen_key, int v_value_pub, int v_coin_new_1_value, int v_coin_new_2_value, int v_coin_old_1_value, int v_coin_old_2_value){
+        generate_proof(gen_key, v_value_pub, v_coin_new_1_value, v_coin_new_2_value, v_coin_old_1_value, v_coin_old_2_value);
+    }
+    int c_verify_proof(int v_value_pub){
+        return verify_proof(v_value_pub)? 1 : 0;
+    }
+}
+
+void write_pk(string path, r1cs_ppzksnark_proving_key<default_r1cs_ppzksnark_pp> pk){
+    ofstream pk_file;
+    pk_file.open (path, ios::out | ios::binary);
+    pk_file << pk;
+    pk_file.close();
+}
+
+r1cs_ppzksnark_proving_key<default_r1cs_ppzksnark_pp> read_pk(string path){
+    r1cs_ppzksnark_proving_key<default_r1cs_ppzksnark_pp> pk_in;
+    ifstream pk_file_in;
+    pk_file_in.open (path, ios::in | ios::binary);
+    pk_file_in >> pk_in;
+    pk_file_in.close();
+    return pk_in;
+}
+
+void write_vk(string path, r1cs_ppzksnark_verification_key<default_r1cs_ppzksnark_pp> vk){
+    ofstream vk_file;
+    vk_file.open (path, ios::out | ios::binary);
+    vk_file << vk;
+    vk_file.close();
+}
+
+r1cs_ppzksnark_verification_key<default_r1cs_ppzksnark_pp> read_vk(string path){
+    r1cs_ppzksnark_verification_key<default_r1cs_ppzksnark_pp> vk_in;
+    ifstream vk_file_in;
+    vk_file_in.open (path, ios::in | ios::binary);
+    vk_file_in >> vk_in;
+    vk_file_in.close();
+    return vk_in;
+}
+
+void write_proof(string path, r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof){
+    ofstream proof_file;
+    proof_file.open (path, ios::out | ios::binary);
+    proof_file << proof;
+    proof_file.close();
+}
+
+r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> read_proof(string path){
+    r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof_in;
+    ifstream proof_file_in;
+    proof_file_in.open (path, ios::in | ios::binary);
+    proof_file_in >> proof_in;
+    proof_file_in.close();
+    return proof_in;
+}
+
+
+
+void generate_proof(int gen_key, int v_value_pub, int v_coin_new_1_value, int v_coin_new_2_value, int v_coin_old_1_value, int v_coin_old_2_value){
     default_r1cs_ppzksnark_pp::init_public_params();
 
     protoboard<FieldT> pb;
@@ -62,10 +122,12 @@ void generate_proof(string path, int v_value_pub, int v_coin_new_1_value, int v_
     coin_new_2_value.allocate(pb, "coin_new_2_value");
     coin_old_2_value.allocate(pb, "coin_old_2_value");
 
-    pb.val(coin_new_1_value) = v_coin_new_1_value;
-    pb.val(coin_old_1_value) = v_coin_old_1_value;
-    pb.val(coin_new_2_value) = v_coin_new_2_value;
-    pb.val(coin_old_2_value) = v_coin_old_2_value;
+    if(!gen_key){
+        pb.val(coin_new_1_value) = v_coin_new_1_value;
+        pb.val(coin_old_1_value) = v_coin_old_1_value;
+        pb.val(coin_new_2_value) = v_coin_new_2_value;
+        pb.val(coin_old_2_value) = v_coin_old_2_value;
+    }
 
     
 
@@ -123,13 +185,15 @@ void generate_proof(string path, int v_value_pub, int v_coin_new_1_value, int v_
     pb.add_r1cs_constraint(r1cs_constraint<FieldT>(coin_old_1_value + coin_old_2_value, 1, coin_old_12_value));
     pb.add_r1cs_constraint(r1cs_constraint<FieldT>(new_value, 1, coin_old_12_value));
 
-    int v_coin_new_12_value = v_coin_new_1_value + v_coin_new_2_value;
-    int v_coin_old_12_value = v_coin_old_1_value + v_coin_old_2_value;
-    int v_new_value = v_coin_new_12_value + v_value_pub;
+    if(!gen_key){
+        int v_coin_new_12_value = v_coin_new_1_value + v_coin_new_2_value;
+        int v_coin_old_12_value = v_coin_old_1_value + v_coin_old_2_value;
+        int v_new_value = v_coin_new_12_value + v_value_pub;
 
-    pb.val(coin_new_12_value) = v_coin_new_12_value;
-    pb.val(coin_old_12_value) = v_coin_old_12_value;
-    pb.val(new_value) = v_new_value;
+        pb.val(coin_new_12_value) = v_coin_new_12_value;
+        pb.val(coin_old_12_value) = v_coin_old_12_value;
+        pb.val(new_value) = v_new_value;
+    }
     
     // coin_old_1_value >= 0
 
@@ -138,26 +202,25 @@ void generate_proof(string path, int v_value_pub, int v_coin_new_1_value, int v_
     // coin_old_1_value + coin_old_2_value <= v_max
 
     
-    cout << "generate_proof(): get_constraint_system" << endl;
-    const r1cs_constraint_system<FieldT> constraint_system = pb.get_constraint_system();
-
-    cout << "generate_proof(): r1cs_ppzksnark_generator" << endl;
-    r1cs_ppzksnark_keypair<default_r1cs_ppzksnark_pp> keypair = r1cs_ppzksnark_generator<default_r1cs_ppzksnark_pp>(constraint_system);
     
+    if(gen_key){
+        cout << "generate_proof(): get_constraint_system" << endl;
+        const r1cs_constraint_system<FieldT> constraint_system = pb.get_constraint_system();
+        cout << "generate_proof(): r1cs_ppzksnark_generator" << endl;
+        r1cs_ppzksnark_keypair<default_r1cs_ppzksnark_pp> keypair = r1cs_ppzksnark_generator<default_r1cs_ppzksnark_pp>(constraint_system);
+        
+        write_pk("pk.bin", keypair.pk);
+        write_vk("vk.bin", keypair.vk);
+        return;
+    }
+
     cout << "generate_proof(): r1cs_ppzksnark_prover" << endl;
-    r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof = r1cs_ppzksnark_prover<default_r1cs_ppzksnark_pp>(keypair.pk, pb.primary_input(), pb.auxiliary_input());
+    r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof 
+        = r1cs_ppzksnark_prover<default_r1cs_ppzksnark_pp>(read_pk("pk.bin"), pb.primary_input(), pb.auxiliary_input());
 
-    ofstream proof_file;
-    proof_file.open ("proof.bin", ios::out | ios::binary);
-    proof_file << proof;
-    proof_file.close();
+    write_proof("proof.bin", proof);
 
-    ofstream vk_file;
-    vk_file.open ("vk.bin", ios::out | ios::binary);
-    vk_file << keypair.vk;
-    vk_file.close();
-
-    bool verified = r1cs_ppzksnark_verifier_strong_IC<default_r1cs_ppzksnark_pp>(keypair.vk, pb.primary_input(), proof);
+    bool verified = r1cs_ppzksnark_verifier_strong_IC<default_r1cs_ppzksnark_pp>(read_vk("vk.bin"), pb.primary_input(), proof);
     if(verified){
         cout << "generate_proof(): verified" << endl;
     }else{
@@ -165,7 +228,7 @@ void generate_proof(string path, int v_value_pub, int v_coin_new_1_value, int v_
     }
 }
 
-bool verify_proof(string path, int v_value_pub){
+bool verify_proof(int v_value_pub){
     default_r1cs_ppzksnark_pp::init_public_params();
 
     protoboard<FieldT> pb;
@@ -174,19 +237,7 @@ bool verify_proof(string path, int v_value_pub){
     pb.val(value_pub) = v_value_pub;
     pb.set_input_sizes(1);
 
-    r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof_in;
-    ifstream proof_file_in;
-    proof_file_in.open ("proof.bin", ios::in | ios::binary);
-    proof_file_in >> proof_in;
-    proof_file_in.close();
-
-    r1cs_ppzksnark_verification_key<default_r1cs_ppzksnark_pp> vk_in;
-    ifstream vk_file_in;
-    vk_file_in.open ("vk.bin", ios::in | ios::binary);
-    vk_file_in >> vk_in;
-    vk_file_in.close();
-
-    bool verified_in = r1cs_ppzksnark_verifier_strong_IC<default_r1cs_ppzksnark_pp>(vk_in, pb.primary_input(), proof_in);
+    bool verified_in = r1cs_ppzksnark_verifier_strong_IC<default_r1cs_ppzksnark_pp>(read_vk("vk.bin"), pb.primary_input(), read_proof("proof.bin"));
     if(verified_in){
         cout << "verify_proof(): verified" << endl;
     }else{

@@ -144,8 +144,8 @@ Scripts
 *.cfg
 *.txt
 settings.json
+.idea
+*.bin
 
 !requirements.txt
 !CMakeLists.txt
-
-.idea

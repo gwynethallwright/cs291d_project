@@ -1,4 +1,5 @@
 include_directories(.)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(
   test
@@ -22,19 +23,20 @@ target_include_directories(
 add_library(
   pour
 
+  SHARED
   pour.cpp
   pour.hpp
 )
 target_link_libraries(
   pour
 
-  PUBLIC
+  PRIVATE
   snark
 )
 target_include_directories(
   pour
 
-  PUBLIC
+  PRIVATE
   ${DEPENDS_DIR}/libsnark
   ${DEPENDS_DIR}/libsnark/depends/libfqfft
   ${DEPENDS_DIR}/libsnark/depends/libff
