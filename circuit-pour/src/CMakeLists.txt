@@ -19,14 +19,16 @@ target_include_directories(
   ${DEPENDS_DIR}/libsnark/depends/libff
 )
 
-add_executable(
+add_library(
   pour
 
   pour.cpp
+  pour.hpp
 )
 target_link_libraries(
   pour
 
+  PUBLIC
   snark
 )
 target_include_directories(
@@ -36,4 +38,16 @@ target_include_directories(
   ${DEPENDS_DIR}/libsnark
   ${DEPENDS_DIR}/libsnark/depends/libfqfft
   ${DEPENDS_DIR}/libsnark/depends/libff
+)
+
+add_executable(
+  main
+
+  main.cpp
+)
+target_link_libraries(
+  main 
+
+  PRIVATE
+  pour
 )

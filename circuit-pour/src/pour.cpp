@@ -11,6 +11,7 @@
 #include "libsnark/gadgetlib1/gadgets/hashes/sha256/sha256_gadget.hpp"
 
 #include "util.hpp"
+#include "pour.hpp"
 
 using namespace libsnark;
 using namespace std;
@@ -193,16 +194,4 @@ bool verify_proof(string path, int v_value_pub){
     }
 
     return verified_in;
-}
-
-int main(int argc, char **argv){
-    if(argc <= 1){
-        cout << "main(): starting generate_proof" << endl;
-        generate_proof("",1,3,1,2,3);
-    } else {
-        int v_value_pub = atoi(argv[1]);
-        cout << "main(): starting verify_proof with v_value_pub=" << v_value_pub << endl;
-        verify_proof("", v_value_pub);
-    }
-    return 0;
 }
