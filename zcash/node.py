@@ -137,7 +137,7 @@ class Node(threading.Thread):
                 self.tree_cm.add_cm(tx.tx_mint[0])
                 self.cm_list.add_cm(tx.tx_mint[0])
                 self.ledger.add_rt(self.tree_cm.tree_cm_t.merkle_root)
-            elif isinstance(tx, TransactionPour):  # test
+            elif isinstance(tx, TransactionPour):
                 self.tree_cm.add_cm(tx.tx_pour[3])
                 self.tree_cm.add_cm(tx.tx_pour[4])
                 self.cm_list.add_cm(tx.tx_pour[3])
@@ -157,8 +157,6 @@ class Node(threading.Thread):
         pw = ProofWork(block, self.wallet)
         pw.mine()
         tx = block.txs[1]
-        print(tx)
-        print(verify_sign(tx.pubkey, str(tx), tx.sign))
         print(self.name, "generate new block successfully")
         self.add_block(block)
         assert self.ledger.verify_block(block)
@@ -185,7 +183,7 @@ class Node(threading.Thread):
                 self.handle_transaction(data)
             else:
                 print(self.name, "verify tx fail")
-        elif isinstance(data, TransactionPour):     # test
+        elif isinstance(data, TransactionPour):
             sn_list = [data.tx_pour[1], data.tx_pour[2]]
             if verify_tx_pour(pp, data.tx_pour, sn_list, self.ledger.rt_list[-1]):
                 print(self.name, "verify pour tx success")
@@ -212,7 +210,7 @@ class Node(threading.Thread):
                     elif isinstance(tx, TransactionMint):
                         if not verify_tx_mint(tx.tx_mint):
                             return
-                    elif isinstance(tx, TransactionPour):   # test
+                    elif isinstance(tx, TransactionPour):
                         sn_list = [tx.tx_pour[1], tx.tx_pour[2]]
                         if not verify_tx_pour(pp, tx.tx_pour, sn_list, self.ledger.rt_list[-1]):
                             return
