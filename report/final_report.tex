@@ -35,7 +35,7 @@ One of the primary objectives of this project is to explore zk-SNARKs and their 
 We wish to understand how to incorporate zk-SNARKs into a basic blockchain in order to improve the blockchain's privacy guarantees. The setup of our scheme must not require any trust beyond a one-time trusted setup of public parameters. The implementation needs to support the minting, merging and splitting of coins without exposing the identities of the users who perform the transactions and the amounts of the currency involved.
 
 \section{Solution}
-The above objectives can be achieved through the combination of zk-SNARKs and a decentralized anonymous payment (DAP) scheme. As part of the Zerocash DAP scheme, we implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour} \cite{zerocash}. For the zk-SNARK, we require the additional functions (\texttt{KeyGen}, \texttt{Prove}, \texttt{Verify}) \cite{zerocash}. In the sections that follow, we provide an overview of the DAP scheme, zk-SNARK and the associated functions just mentioned.
+The above objectives can be achieved through the combination of zk-SNARKs and a decentralized anonymous payment (DAP) scheme. As part of the Zerocash DAP scheme, we implement the following core functions: \texttt{Setup}, \texttt{CreateAddress}, \texttt{Receive}, \texttt{Mint}, \texttt{VerifyTransaction} and \texttt{Pour} \cite{zerocash}. For the zk-SNARK, we require the additional functions (\texttt{KeyGen}, \texttt{Prove}, \texttt{Verify}) \cite{zerocash}. In the sections that follow, we provide an overview of the DAP scheme, zk-SNARK and core functions.
 
 \subsection{DAP Scheme}
 \subsubsection{Basecoin}
@@ -44,7 +44,7 @@ The Zerocash protocol is applied on top of a ledger-based currency (e.g.\ Bitcoi
 In addition to the basecoin transactions, Zerocash includes two new kinds of transactions --- minting and pouring --- which will be described later. Mint and pour transactions are also recorded in the basecoin ledger.
 
 \subsubsection{Public Parameters}
-In addition to the basecoin ledger, users have access to a set of public parameters. These are part of the one-time trusted setup that takes place before other functions are allowed to execute.
+In addition to the ledger, users have access to a set of public parameters. These are part of the one-time trusted setup that takes place before other functions are allowed to execute.
 
 \subsubsection{Address Key Pairs}
 Users may generate as many public and private address key pairs as they desire. The public address keys are published with the purpose of allowing users to make payments among themselves. The secret keys are used for receiving payments.
@@ -52,7 +52,7 @@ Users may generate as many public and private address key pairs as they desire. 
 \subsubsection{Coins}
 Coins are data structures that encapsulate the following information:
 \begin{itemize}
-\item A coin commitment, which is a string that we append to the basecoin ledger once the coin is minted.
+\item A coin commitment, which is a string that we append to the ledger once the coin is minted.
 \item A coin value (between 0 and some parameter $v_{\text{max}}$) that specifies the coin denomination in basecoin units.
 \item A coin serial number, which is a string that uniquely identifies the coin and is used to prevent double-spending.
 \item A coin address --- the public address key of the user who owns the coin.
@@ -65,10 +65,10 @@ The Zerocash protocol requires us to maintain the following coin-related informa
 \item A list of coin commitments that appear in mint and pour transactions.
 \item A list of all coin serial numbers that appear in pour transactions.
 \end{itemize}
-For efficiency reasons, it is useful to store the latter two lists (which could also be obtained from the basecoin ledger) separately.
+For efficiency reasons, it is useful to store the latter two lists (which could also be obtained from the ledger) separately.
 
 \subsubsection{New Transaction 1: Mint}
-Mint transactions are used to create coins. At its most basic, a mint transaction can be described as a tuple $(\text{cm}, v)$, where $\text{cm}$ is the commitment of the minted coin and $v$ is its value. Whenever a coin is minted, this tuple is placed on the basecoin ledger.
+Mint transactions are used to create coins. At its most basic, a mint transaction can be described as a tuple $(\text{cm}, v)$, where $\text{cm}$ is the commitment of the minted coin and $v$ is its value. Whenever a coin is minted, this tuple is placed on the ledger.
 
 \subsubsection{New Transaction 2: Pour}
 Pour transactions record the pouring of two input coins into two new output coins (thereby spending the two initial coins). At its most basic, a pour transaction can be described as a tuple $(\text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, \text{info})$, where rt is the root of the Merkle tree over coin commitments, the sn are the serial numbers of the old coins, the cm are the commitments of the new coins, $v_{\text{pub}}$ is a coin value and info is an arbitrary string. Pour transactions may also include implementation-specific information.
@@ -137,7 +137,17 @@ The purpose of \texttt{CreateAddress} is to generate public-private address key 
 The purpose of a call to \texttt{Mint} is the creation of a coin. It takes as input the public parameters generated by \texttt{Setup}, the value of the coin to be minted and the public address key of the coin's owner. It returns a coin data structure for the minted coin, along with the associated mint transaction.
 
 \subsubsection{\texttt{Pour}}
-\texttt{Pour} is easily one of the most complicated functions in the Zerocash system. It is used to ``pour" two old coins into two new ones, such that the sum of the two old coins equals the sum of the two new ones. It takes the following as input:
+\texttt{Pour} is easily one of the most complicated functions in the Zerocash system. It is used to ``pour" two old coins into two new ones, such that the sum of the two old coins equals the sum of the two new ones. The latter sum could potentially an additional value $v_{\text{pub}}$ that is publicly spent in the transaction. In this case, the balance equation would be 
+
+\begin{equation}
+v_1^{\text{old}} + v_2^{\text{old}} = v_1^{\text{new}} + v_2^{\text{new}} + v_{\text{pub}}.
+\label{balance}
+\end{equation}
+\newline
+
+The \texttt{Pour} operation could have multiple purposes, including switching coin denominations, making public payments and transferring coin ownership.
+
+\texttt{Pour} takes the following as input:
 
 \begin{itemize}
 \item The public parameters generated by \texttt{Setup}.
@@ -147,7 +157,7 @@ The purpose of a call to \texttt{Mint} is the creation of a coin. It takes as in
 \item The authentications paths for each of the old coin commitments to the root of the Merkle tree.
 \item Two new coin values.
 \item The public address keys for the owners of the two new coins.
-\item A coin value $v_\text{pub}$.
+\item A coin value $v_\text{pub}$. This is amount that will be \emph{publicly} spent in the pour transaction --- for example, to pay a transaction fee or to purchase coins.
 \item An information string.
 \end{itemize}
 
@@ -157,14 +167,23 @@ For the provided Merkle tree root, serial numbers of the old coins and coin comm
 
 \begin{itemize}
 \item All four of the coins have the correct commitments.
-\item The secret address key is a match for the provided public address key.
+\item For both of the old coins, the provided secret address key matches the secret address key that is generated from the public address key that forms part of the old coin's data structure.
 \item The serial numbers of the old coins are correct.
-\item The two commitments of the old coins feature in the provided Merkle tree.
-\item The balance equation for the old and new coin values is preserved.
+\item The two commitments of the old coins feature in the provided Merkle tree. This is to ensure that the old coins have been previously minted.
+\item The balance equation for the old and new coin values, Equation \eqref{balance}, is preserved.
 \end{itemize}
 
+\texttt{Pour} also appends its transaction to the ledger. Note that a transaction tuple does not reveal any of the coin values or recipient addresses besides from $v_{\text{pub}}$ --- it contains only the following information: 
+
+\begin{equation}
+(\text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, \text{info}).
+\end{equation}
+
 \subsubsection{\texttt{Receive}}
+\texttt{Receive} is used to receive payments. It takes as input the ledger and the address key pair of the recipient. It returns a set of coin objects that have not been spent by the recipient, but that were paid to the recipient through \texttt{Pour} transactions. This excludes coins that were minted by the recipient.
+
 \subsubsection{\texttt{VerifyTransaction}}
+The purpose of \texttt{VerifyTransaction} is to determine whether or not a provided transaction is valid. It takes as input the ledger, the public parameters generated by \texttt{Setup} and a mint or pour transaction. It returns $1$ if the transaction is valid, and $0$ otherwise. In theory, \texttt{VerifyTransaction} could be utilized by both individual users and the nodes of the distributed system.
 
 \section{Related Work}
 \section{Evaluation}
