@@ -12,7 +12,7 @@
 
 \begin{document}
 
-\title{CS291D Final Report: a Basic Zcash Implementation}
+\title{CS291D Final Report: a Basic Zerocash Implementation}
 \author{Gwyneth Allwright, Karl Wang, Dewei Zeng}
 
 \maketitle
@@ -92,16 +92,25 @@ zk-SNARKs can be described in terms of arithmetic circuit satisfiability. The ke
 
 The set of all $X$ that satisfy Equation \ref{zk-snark-definition} form the set $\mathbb{L}_C$. The statement that a prover would want to demonstrate is that for a given $X$, we have $X \in \mathbb{L}_C$.
 
-\subsubsection{\texttt{KeyGen}}
+\subsubsection{Important zk-SNARK Functions}
+
+\begin{enumerate}
+
+\item {\texttt{KeyGen}}:
+
 The function \texttt{KeyGen} is used to sample a proving key and a verification key for the zk-SNARK. These keys are both public parameters. Their purpose is to help prove that a certain $X$ belongs in the set $\mathbb{L}_C$.
 
 \texttt{KeyGen} takes as input the security parameter and zk-SNARK circuit $C$, and returns a key pair.
 
-\subsubsection{\texttt{Prove}}
+\item {\texttt{Prove}}:
+
 The function \texttt{Prove} takes as input a proving key, as well as a pair $(X, A)$ --- where $X$ represents a main input for the circuit $C$ and $A$ the witness. It returns a proof $\Pi$ for the statement that $X \in \mathbb{L}_C$.
 
-\subsubsection{\texttt{Verify}}
+\item {\texttt{Verify}}:
+
 The function \texttt{Verify} takes as input a verification key, the circuit's main input $X$ and a proof $\Pi$. It outputs $1$ if there is sufficient evidence that $x \in \mathbb{L}_C$, and 0 otherwise.
+
+\end{enumerate}
 
 \subsubsection{zk-SNARK Properties}
 \begin{itemize}
@@ -115,10 +124,10 @@ where $\lambda$ is the security parameter, the output of \texttt{Verify} will be
 
 \item \emph{Succinctness.} This property has two components. First, it means that a proof $\Pi$ that was generated from \texttt{Prove} has $\mathcal{O}(1)$ bits for a given security parameter. Second (again for a fixed security parameter), \texttt{Verify} has time complexity $\mathcal{O}(X)$.
 
-\item Zero knowledge:
+\item \emph{Zero knowledge.}
 \end{itemize}
 
-\subsection{Important Functions}
+\subsection{Key Zerocash Functions}
 The DAP scheme described above is implemented by means of a tuple of polynomial-time algorithms (\texttt{Setup}, \texttt{CreateAddress}, \texttt{Mint}, \texttt{Pour}, \texttt{VerifyTransaction}, \texttt{Receive}). In this section, we describe the arguments, outputs and interrelation of these functions.
 
 \subsubsection{\texttt{Setup}}
@@ -163,6 +172,8 @@ The \texttt{Pour} operation could have multiple purposes, including switching co
 
 One of the primary tasks performed in \texttt{Pour} is to prove or disprove the following: \newline
 
+\fbox{\parbox{\textwidth}{
+\medskip
 For the provided Merkle tree root, serial numbers of the old coins and coin commitments for the two new coins, there are two old coins, two news coins and a secret address key such that the following statements hold:
 
 \begin{itemize}
@@ -171,12 +182,23 @@ For the provided Merkle tree root, serial numbers of the old coins and coin comm
 \item The serial numbers of the old coins are correct.
 \item The two commitments of the old coins feature in the provided Merkle tree. This is to ensure that the old coins have been previously minted.
 \item The balance equation for the old and new coin values, Equation \eqref{balance}, is preserved.
-\end{itemize}
+\end{itemize}}}
+\medskip
+
+In order to perform the generation and verification of the proof, we turn to zk-SNARKs. Recall that the circuit $C$ was generated in the \texttt{Setup} step. $C$ takes a main input $X$ and witness $A$ that are constructed as follows:
+
+\begin{align}
+X &= \left( \text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, h_{\text{Sig}}, \, h_1, \, h_2 \right) \\ 
+A &= \left( \text{path}_1, \, \text{path}_2, \, {\text{c}}^{\text{old}}_1, \, {\text{c}}^{\text{old}}_2, \, {\text{addr}}^{\text{old}}_{\text{sk}, 1}, \, {\text{addr}}^{\text{old}}_{\text{sk}, 2}, \, {\text{c}}^{\text{new}}_1, \, {\text{c}}^{\text{new}}_2 \right),
+\end{align}
+\newline
+
+where rt is the root of the Merkle tree over coin commitments, the sn are the coin serial numbers, the cm are the coin commitments, $v_{\text{pub}}$ is the publicly spent amount in the pour transaction, the $h$ are parameters used to ensure non-malleability, the paths are Merkle tree authentication paths for the two old coins, the c are the coins themselves and the addr are the secret address keys associated with the old coins.
 
 \texttt{Pour} also appends its transaction to the ledger. Note that a transaction tuple does not reveal any of the coin values or recipient addresses besides from $v_{\text{pub}}$ --- it contains only the following information: 
 
 \begin{equation}
-(\text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, \text{info}).
+\left(\text{rt}, \, {\text{sn}}^{\text{old}}_1, \, {\text{sn}}^{\text{old}}_2, \, {\text{cm}}^{\text{new}}_1, \, {\text{cm}}^{\text{new}}_2, \, v_{\text{pub}}, \, \text{info}\right).
 \end{equation}
 
 \subsubsection{\texttt{Receive}}
