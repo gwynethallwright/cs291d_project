@@ -3,7 +3,7 @@ import string
 
 from merklelib import MerkleTree
 from merklelib.utils import to_hex
-from blockchain.blockchain import BlockChain
+from blockchain.chain import BlockChain
 from zcash.transaction import TransactionMint, TransactionPour
 
 
@@ -32,7 +32,10 @@ class MerkleTreeLedger(MerkleTree):
         parent = cur.parent
         while parent:
             if cur.hash == parent.left.hash:
-                path.append((parent.right.hash, 1))  # right leaf
+                try:
+                    path.append((parent.right.hash, 1))  # right leaf
+                except AttributeError:
+                    pass
             else:
                 path.append((parent.left.hash, 0))   # left leaf
             cur = parent
@@ -73,6 +76,9 @@ class Ledger(BlockChain):
     def __init__(self):
         super(Ledger, self).__init__()
         self.rt_list = []
+
+    def add_rt(self, rt):
+        self.rt_list.append(rt)
 
 
 class CMListT:
@@ -159,4 +165,8 @@ if __name__ == '__main__':
     # path test
     path = tree.get_path('A')
     res = tree.verify_leaf_path('A', path)
+
+    # tree.append(',')
+    # path = tree.get_path(',')
+    # res = tree.verify_leaf_path(',', path)
     assert res

@@ -106,8 +106,9 @@ class ProofWork():
         prefix = '0' * self.difficulty
         i = 0
         t = Transaction("", self.wallet.address, MINE_REWARD)
-        signature = self.wallet.sign(json.dumps(t, cls=TransactionEncoder))
+        signature = self.wallet.sign(str(t))
         t.set_sign(self.wallet.pubkey, signature)
+        print(verify_sign(t.pubkey, str(t), signature))
         self.block.txs.append(t)
         while i < 5000000:
             message = hashlib.sha256()

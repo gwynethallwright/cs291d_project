@@ -1,3 +1,7 @@
+import datetime
+from zcash.tools import tuple_to_str
+
+
 class TransactionPour:
     def __init__(self, rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, value_pub, info,
                  pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign):
@@ -6,7 +10,7 @@ class TransactionPour:
         self.tx_pour = tx_pour
 
     def __repr__(self):
-        return ','.join(self.tx_pour)
+        return tuple_to_str(self.tx_pour)
 
 
 class TransactionMint:
@@ -18,7 +22,7 @@ class TransactionMint:
         self.tx_mint = tx_mint
 
     def __repr__(self):
-        return ','.join(self.tx_mint)
+        return tuple_to_str(self.tx_mint)
 
 
 class Coin:

@@ -3,7 +3,7 @@
 
 import time
 
-from .node import *
+from blockchain.node import *
 
 node1 = Node(8002, "node 1")
 

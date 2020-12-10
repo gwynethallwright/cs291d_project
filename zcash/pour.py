@@ -3,8 +3,8 @@ import os
 
 from zcash.circuit import circuit_prove, circuit_verify
 from zcash.cryptographic_basics import K_sig, E_enc, S_sig, V_sig
-from zcash.ledger import Ledger
-from zcash.tools import comm_r, comm_s, prf_pk, concat, prf_sn, CRH, tuple_to_str
+from zcash.ledger import SNListT, TreeCMT
+from zcash.tools import comm_r, comm_s, prf_pk, concat, prf_sn, CRH, tuple_to_bytes
 
 
 def pour(pp, rt, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, path1, path2, value_new_1, value_new_2, addr_new_pk_1, addr_new_pk_2, value_pub, info):
@@ -53,8 +53,8 @@ def pour(pp, rt, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, path1, pa
     coin_new_2 = (addr_new_pk_2, value_new_2, p_new_2, r_new_2, s_new_2, cm_new_2)
 
     # compute ciphertext, the encryption of the plaintext under pk
-    Ciphertext_1 = E_enc(pk_enc, tuple_to_str((value_new_1, p_new_1, r_new_1, s_new_1)))
-    Ciphertext_2 = E_enc(pk_enc, tuple_to_str((value_new_2, p_new_2, r_new_2, s_new_2)))
+    Ciphertext_1 = E_enc(pk_enc, tuple_to_bytes((value_new_1, p_new_1, r_new_1, s_new_1)))
+    Ciphertext_2 = E_enc(pk_enc, tuple_to_bytes((value_new_2, p_new_2, r_new_2, s_new_2)))
 
     # compute old sn
     sn_old_1 = prf_sn(a_sk_old_1, p_old_1)
@@ -69,21 +69,21 @@ def pour(pp, rt, coin_old_1, coin_old_2, addr_old_sk_1, addr_old_sk_2, path1, pa
                  addr_old_sk_1, addr_old_sk_2, coin_new_1, coin_new_2)    # private input of circuir of pour
     proof_pour = circuit_prove(pk_pour, x_pub, a_private)
     msg = (x_pub, proof_pour, info, Ciphertext_1, Ciphertext_2)
-    sign = S_sig(sk_sig, tuple_to_str(msg))
+    sign = S_sig(sk_sig, tuple_to_bytes(msg))
     tx_pour = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, value_pub, info,
                (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign))
     return coin_new_1, coin_new_2, tx_pour
 
 
-def verify_tx_pour(pp, tx_pour, ledger: Ledger):
+def verify_tx_pour(pp, tx_pour, sn_list: list, tree_cm_rt: bytes):
     vk_pour = pp[1]
     (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, value_pub, info,
      (pk_sig, h1, h2, proof_pour, Ciphertext_1, Ciphertext_2, sign)) = tx_pour
-    if not ledger.verify_sn_inclusion(sn_old_1) or not ledger.verify_sn_inclusion(sn_old_2) \
-            or ledger.tree_cm_t.merkle_root != rt:
-        return 0
+    if sn_old_1 not in sn_list or sn_old_2 not in sn_list \
+            or tree_cm_rt != rt:
+        return False
     h_sig = CRH(pk_sig)
     x_pub = (rt, sn_old_1, sn_old_2, cm_new_1, cm_new_2, value_pub, h_sig, h1, h2)
     msg = (x_pub, proof_pour, info, Ciphertext_1, Ciphertext_2)
-    return V_sig(pk_sig, msg, sign) and circuit_verify(vk_pour, x_pub, proof_pour)
+    return V_sig(pk_sig, tuple_to_bytes(msg), sign) and circuit_verify(vk_pour, x_pub, proof_pour)
 

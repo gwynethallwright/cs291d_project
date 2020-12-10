@@ -39,7 +39,7 @@ def mint(pp, v, addr_pk):
     return coin, tx_mint
 
 
-def verify_tx_mint(tx_mint) -> bool:
+def verify_tx_mint(tx_mint: tuple) -> bool:
     (cm, v, k, s) = tx_mint
     cm_verify = comm_s(v, k)
     if cm_verify == cm:

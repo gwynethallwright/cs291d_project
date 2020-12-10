@@ -1,8 +1,9 @@
 import base64
 import hashlib
 import json
+import datetime
 
-from .cryptographic_basics import *
+from zcash.cryptographic_basics import *
 
 
 class Wallet():
@@ -14,7 +15,7 @@ class Wallet():
         """
         generate address by pk
         """
-        h = hashlib.sha256(self._pk.to_pem())
+        h = hashlib.sha256(self._pk)
         return base64.b64encode(h.digest())
 
     @property
@@ -22,9 +23,9 @@ class Wallet():
         """
         return pubkey string
         """
-        return self._pk.to_pem()
+        return self._pk
 
-    def sign(self, msg):
+    def sign(self, msg: bytes):
         """
         generate digital signature
         """

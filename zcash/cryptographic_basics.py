@@ -31,17 +31,19 @@ def K_sig(pp_sig) -> (str, str):
     return sk, pk
 
 
-def S_sig(sk_sig: str, m: str) -> bytes:
+def S_sig(sk_sig: str, m: bytes) -> bytes:
+    if isinstance(m, str):
+        m = m.encode('utf-8')
     sk = SigningKey.from_pem(sk_sig)
-    h = hashlib.sha256(m.encode('utf-8'))
+    h = hashlib.sha256(m)
     return binascii.hexlify(sk.sign(h.digest()))
 
 
-def V_sig(pk_sig, m, sigma: bytes) -> bool:
+def V_sig(pk_sig, m: bytes, sigma: bytes) -> bool:
     verifier = VerifyingKey.from_pem(pk_sig)
-    if isinstance(m, bytes):
-        m = m.decode('utf-8')
-    h = hashlib.sha256(m.encode('utf-8'))
+    if isinstance(m, str):
+        m = m.encode('utf-8')
+    h = hashlib.sha256(m)
     return verifier.verify(binascii.unhexlify(sigma), h.digest())
 
 
@@ -59,7 +61,7 @@ def K_enc(pp_enc):
     return public_key_hex, private_key_hex
 
 
-def E_enc(pk_enc, m) -> bytes:
+def E_enc(pk_enc, m: bytes) -> bytes:
     if not isinstance(m, bytes):
         m = bytes(m, 'utf-8')
     return encrypt(pk_enc, m)

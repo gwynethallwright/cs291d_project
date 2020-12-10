@@ -4,7 +4,7 @@ import threading
 
 from blockchain.wallet import Wallet, Transaction, verify_sign
 
-from blockchain.blockchain import BlockChain, Block, ProofWork, get_balance
+from blockchain.chain import BlockChain, Block, ProofWork, get_balance
 
 # global variable to save all nodes
 NODE_LIST = []

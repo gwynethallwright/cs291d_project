@@ -108,3 +108,17 @@ def tuple_to_str(data: tuple) -> str:
         else:
             data_str.append(i)
     return ','.join(data_str)
+
+
+def tuple_to_bytes(data: tuple) -> bytes:
+    data_bytes = b''
+    for i in data:
+        if isinstance(i, int):
+            data_bytes += str(i).encode('utf-8')
+        elif isinstance(i, str):
+            data_bytes += i.encode('utf-8')
+        elif isinstance(i, tuple):
+            data_bytes += tuple_to_bytes(i)
+        else:
+            data_bytes += i
+    return data_bytes
