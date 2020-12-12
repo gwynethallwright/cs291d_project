@@ -215,7 +215,13 @@ The purpose of \texttt{VerifyTransaction} is to determine whether or not a provi
 \section{Related Work}
 Although there has been an extensive amount of research related to zk-SNARKs, only a few have made their way into cryptographic tools \cite{zk-snarks-blockchains-chapter}. Nevertheless, zk-SNARKs are especially useful for blockchains --- for reasons other than the mere improvement of privacy guarantees. For example, zk-SNARK proofs are non-interactive, which means that verifiers can check a proof at their leisure, without collaborating with the prover. In addition, zk-SNARKs proofs are concise, which means that they can be verified efficiently. These properties can be used to improve the scalability of blockchains \cite{zk-snarks-blockchains-chapter}.
 
-It should therefore come as no surprise the zk-SNARKs have been used in other blockchain systems. An example of such a system is CODA \cite{coda}, where the approach taken is to bundle up a group of transactions, calculate a zero-knowledge proof for each, and then provide a single proof that can be used to verify them all.
+It should therefore come as no surprise the zk-SNARKs have been used in other blockchain systems. An example of such a system is CODA \cite{coda}, where the idea is to bundle up a group of transactions, calculate a zero-knowledge proof for each, and then provide a single proof that can be used to verify them all \cite{zk-snarks-blockchains-chapter}.
+
+In addition to the various blockchain systems that capitalize on zk-SNARKs, there are also variations of zero-knowledge proofs themselves, such as zero-knowledge Succinct Transparent Arguments of Knowledge (zk-STARKs) and bulletproofs.
+
+One of the main advantages of choosing zk-STARKs over zk-SNARKs is that zk-STARKs provide excellent security --- for example, they do not require a trusted setup. However, due to their large proof size, which grows as $\mathcal{O}(\log^ 2{|C|})$ with respect to the circuit size $|C|$, zk-STARKs are currently not as practical as zk-SNARKs. For the latter, the proof size remains constant as $|C|$ increases \cite{zk-snarks-blockchains-chapter}.
+
+Bulletproofs also do not require a trusted setup. However, their proof size scales as $\mathcal{O}(\log{|C|})$, which again makes them (generally) less performant than zk-SNARKs \cite{zk-snarks-blockchains-chapter}.
 
 \section{Evaluation}
 
