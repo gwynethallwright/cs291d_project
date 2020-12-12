@@ -226,7 +226,7 @@ One of the main advantages of zk-STARKs over zk-SNARKs is the excellent security
 Bulletproofs also do not require a trusted setup. However, their proof size scales as $\mathcal{O}(\log{|C|})$, which again makes them (generally) less performant than zk-SNARKs \cite{zk-snarks-blockchains-chapter}.
 
 \section{Evaluation}
-Our attempt to implement a basic version of Zerocash in Python was partially successful. First, we were able to build a basic blockchain from scratch. Second, we made our blockchain distributed through the implementation of a \texttt{Node} class, where different nodes could be run on different ports of the same machine. Third, we managed to build some Zerocash functionalities on top of our blockchain. However, we struggled to integrate our code with existing zk-SNARK tooling, which was partially due to the lack of documentation and resources on this topic.
+Our attempt to implement a basic version of Zerocash in Python was partially successful. First, we were able to build a basic blockchain from scratch. Second, we made our blockchain distributed through the implementation of a \texttt{Node} class, where different nodes could be run on different ports of the same machine. Third, we managed to build some Zerocash functionalities on top of our blockchain. Lastly, we integrated our code with the C++ zk-SNARK library libsnark and constructed the portion of the NP Statement POUR that checks for balance. However, we struggled to construct the rest of POUR, which was mostly due to the lack of documentation and tooling.
 
 \printbibliography
 
