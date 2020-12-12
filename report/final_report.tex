@@ -124,7 +124,9 @@ where $\lambda$ is the security parameter, the output of \texttt{Verify} will be
 
 \item \emph{Succinctness.} This property has two components. First, it means that a proof $\Pi$ that was generated from \texttt{Prove} has $\mathcal{O}(1)$ bits for a given security parameter. Second (again for a fixed security parameter), \texttt{Verify} has time complexity $\mathcal{O}(X)$.
 
-\item \emph{Zero knowledge.}
+\item \emph{Proof of knowledge} (intuitive idea). If a proof is verified to be correct, then the prover ``knows" (is able to extract) a witness that corresponds to the instance, with certain guarantees around the time complexity of the extraction.
+
+\item \emph{Zero knowledge}. The proof does not leak information about the witness.
 \end{itemize}
 
 \subsection{Key Zerocash Functions}
@@ -226,7 +228,6 @@ Bulletproofs also do not require a trusted setup. However, their proof size scal
 \section{Evaluation}
 Our attempt to implement a basic version of Zerocash in Python was partially successful. First, we were able to build a basic blockchain from scratch. Second, we made our blockchain distributed through the implementation of a \texttt{Node} class, where different nodes could be run on different ports of the same machine. Third, we managed to build some Zerocash functionalities on top of our blockchain. However, we struggled to integrate our code with existing zk-SNARK tooling, which was partially due to the lack of documentation and resources on this topic.
 
-\newpage
 \printbibliography
 
 \end{document}
