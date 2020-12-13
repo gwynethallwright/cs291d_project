@@ -2,9 +2,7 @@
 
 version:python3
 
-## installation
-
-
+## installation (With zkSNARK)
 clone the project with all the submodules (C++ dependencies)
 ```
 git clone --recurse-submodules git@github.com:gwynethallwright/cs291d_project.git
@@ -48,6 +46,17 @@ go to `circuit-pour\build\src` and run these commands:
     ```
     main 1
     ```
+    
+## installation (Without zkSNARK)
+clone the project with all the submodules (C++ dependencies)
+```
+git clone --recurse-submodules git@github.com:gwynethallwright/cs291d_project.git
+```
+
+install Python dependencies
+```
+pip install -r requirements.txt
+```
 
 ## simple blockchian
 in directory `blockchain`
