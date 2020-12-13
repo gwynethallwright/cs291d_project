@@ -19,8 +19,8 @@ pip install -r requirements.txt
 ```
 
 fix dedencency
+add this line to the top of `circuit-pour/depends/libsnark/depends/libff/CMakeLists.txt`:
 ```
-add this line to the top of circuit-pour/depends/libsnark/depends/libff/CMakeLists.txt
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ```
 
