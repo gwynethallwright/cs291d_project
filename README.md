@@ -44,7 +44,7 @@ go to `circuit-pour\build\src` and run these commands:
     ```
     main 1 2 3 3 3
     ```
-3. Use vk.bin to check proof in proof.bin. The last line of the output should be verify_proof(): verified.
+3. Use vk.bin to check proof in proof.bin. If the number is the public value, the last line of the output should be verify_proof(): verified.
     ```
     main 1
     ```
