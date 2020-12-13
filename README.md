@@ -26,20 +26,28 @@ add this line to the top of circuit-pour/depends/libsnark/depends/libff/CMakeLis
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 ```
 
-### build C++ project
+### build the circuit-pour C++ project
 at the `circuit-pour` directory, run:
 ```
 cmake -S . -B build
 cmake --build build
 ```
 
-### test the C++ project
-go to `circuit-pour\build\src` and run
-```
-main # this generate the key to pk.bin and vk.bin.
-main 1 2 3 3 3 # this reads pk.bin, generates proof, and writes it to proof.bin. the first number is the public value, the rest are coin values.
-main 1 # this uses vk.bin to checks proof in proof.bin. The last line of the output should be verify_proof(): verified.
-```
+### test the circuit-pour C++ project
+go to `circuit-pour\build\src` and run these commands:
+
+1. Generate the key to pk.bin and vk.bin.
+    ```
+    main
+    ```
+2. Read pk.bin, generate proof, and write it to proof.bin. the first number is the public value, the rest are coin values.
+    ```
+    main 1 2 3 3 3
+    ```
+3. Use vk.bin to check proof in proof.bin. The last line of the output should be verify_proof(): verified.
+    ```
+    main 1
+    ```
 
 ## simple blockchian
 in directory `blockchain`
