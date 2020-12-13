@@ -48,9 +48,9 @@ go to `circuit-pour\build\src` and run these commands:
     ```
     
 ## installation (Without zkSNARK)
-clone the project with all the submodules (C++ dependencies)
+clone the project
 ```
-git clone --recurse-submodules git@github.com:gwynethallwright/cs291d_project.git
+git clone git@github.com:gwynethallwright/cs291d_project.git
 ```
 
 install Python dependencies
