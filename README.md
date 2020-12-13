@@ -58,6 +58,9 @@ install Python dependencies
 pip install -r requirements.txt
 ```
 
+## demo
+All releveant functionalities are demonstrated in the Jupyter notebook `test_zcash_node.ipynb`.
+
 ## simple blockchian
 in directory `blockchain`
 
